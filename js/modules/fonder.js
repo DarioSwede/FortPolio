@@ -2,6 +2,7 @@
 Layout.register({
   id: 'fonder',
   title: 'Fonder <span style="text-transform:none; font-weight:400; font-size:10.5px;">NAV manuellt</span>',
+  defaultWidth: 460,
 
   build(container){
     const list = document.createElement('div'); list.className = 'grid-list';

@@ -27,7 +27,7 @@ const Layout = {
     const panel = document.createElement('div');
     panel.className = 'panel';
     panel.dataset.id = mod.id;
-    const width = State.layout.widths[mod.id];
+    const width = State.layout.widths[mod.id] || mod.defaultWidth;
     if(width) panel.style.setProperty('--panel-basis', width + 'px');
 
     const card = document.createElement('div');
