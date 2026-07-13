@@ -33,6 +33,7 @@ const ModuleActions = {
   toggleSimpleView(){
     State.simpleView = !State.simpleView;
     State.save();
+    document.getElementById('simpleViewSwitchEl').classList.toggle('on', State.simpleView);
     Layout.refreshModule('aktier');
   },
 

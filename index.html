@@ -23,6 +23,9 @@
       <span>Portfölj &middot; Avanza</span>
       <div class="hide-toggle">
         <button class="btn" style="padding:6px 10px; font-size:11px;" onclick="ModuleActions.openRekrypt()">🔑 Byt lösenord</button>
+        <button class="btn" style="padding:6px 10px; font-size:11px;" id="refreshBtn">↻ Uppdatera kurser</button>
+        <span class="hide-toggle-label">Enkel vy</span>
+        <div class="switch" id="simpleViewSwitchEl"><div class="knob"></div></div>
         <span class="hide-toggle-label" id="hideLabel">Visa belopp</span>
         <div class="switch" id="switchEl"><div class="knob"></div></div>
       </div>
@@ -32,7 +35,6 @@
       <div class="total-change" id="totalChange">—</div>
     </div>
     <div class="actions">
-      <button class="btn" id="refreshBtn">↻ Uppdatera kurser</button>
       <span class="stamp" id="stamp">Ej uppdaterat än</span>
     </div>
   </header>

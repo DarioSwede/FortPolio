@@ -5,43 +5,44 @@ Layout.register({
   defaultWidth: 1520,
 
   SECTOR_COLORS: ['#5B8DEF','#9B6BCE','#4FB8E0','#E0A15C','#7FA8C9','#C97BB0','#6FBF73','#D98686','#8FA6B2','#B7A0E0'],
+  FOREIGN_COLOR: '#5B8DEF',
 
   build(container){
     const simple = State.simpleView;
-
-    const toggleRow = document.createElement('div'); toggleRow.className = 'hide-toggle'; toggleRow.style.cssText = 'justify-content:flex-end; margin-bottom:14px;';
-    toggleRow.innerHTML = `
-      <span class="hide-toggle-label">Enkel vy</span>
-      <div class="switch ${simple ? 'on' : ''}" onclick="ModuleActions.toggleSimpleView()"><div class="knob"></div></div>
-    `;
-    container.appendChild(toggleRow);
-
-    container.appendChild(this.distribution());
-
     const ALL_SECTORS = [...new Set(State.STOCKS.flatMap(s => s.tags))];
 
-    const chips = document.createElement('div');
-    const row = document.createElement('div'); row.className = 'chip-row';
+    const wrap = document.createElement('div'); wrap.className = 'aktier-container';
+    const grid = document.createElement('div'); grid.className = 'aktier-layout';
+
+    // --- Left: filter menu ---
+    const menu = document.createElement('div'); menu.className = 'aktier-menu';
+    const menuLabel = document.createElement('div'); menuLabel.className = 'chip-group-label'; menuLabel.style.marginTop = '0'; menuLabel.textContent = 'Resultat & geografi';
+    const menuChips = document.createElement('div'); menuChips.className = 'chip-col';
     [{k:'all',label:'Alla'},{k:'winners',label:'Vinnare'},{k:'losers',label:'Förlorare'},{k:'swedish',label:'Svenska'},{k:'foreign',label:'Utländska'}]
     .forEach(b => {
       const c = document.createElement('button');
       c.className = 'chip' + (State.activeFilter.kind === b.k ? ' active' : '');
       c.textContent = b.label;
       c.onclick = () => { State.activeFilter = { kind:b.k, value:null }; Layout.refreshModule('aktier'); };
-      row.appendChild(c);
+      menuChips.appendChild(c);
     });
+    menu.appendChild(menuLabel); menu.appendChild(menuChips);
+
     if(!simple){
-      ALL_SECTORS.forEach((sec, i) => {
+      const sectorLabel = document.createElement('div'); sectorLabel.className = 'chip-group-label'; sectorLabel.textContent = 'Sektor';
+      const sectorChips = document.createElement('div'); sectorChips.className = 'chip-col';
+      ALL_SECTORS.forEach(sec => {
         const c = document.createElement('button');
-        c.className = 'chip' + (i === 0 ? ' sector-start' : '') + (State.activeFilter.kind === 'sector' && State.activeFilter.value === sec ? ' active' : '');
+        c.className = 'chip' + (State.activeFilter.kind === 'sector' && State.activeFilter.value === sec ? ' active' : '');
         c.textContent = sec;
         c.onclick = () => { State.activeFilter = { kind:'sector', value:sec }; Layout.refreshModule('aktier'); };
-        row.appendChild(c);
+        sectorChips.appendChild(c);
       });
+      menu.appendChild(sectorLabel); menu.appendChild(sectorChips);
     }
-    chips.appendChild(row);
-    container.appendChild(chips);
 
+    // --- Middle: stock list ---
+    const main = document.createElement('div'); main.className = 'aktier-main';
     const matches = s => {
       const ch = Format.pct(s.price, s.gav);
       const f = State.activeFilter;
@@ -64,7 +65,7 @@ Layout.register({
     } else {
       filtered.forEach(s => list.appendChild(this.row(s, simple)));
     }
-    container.appendChild(list);
+    main.appendChild(list);
 
     if(!simple){
       const priceBox = document.createElement('div'); priceBox.className = 'text-box';
@@ -75,7 +76,7 @@ Layout.register({
         <div class="actions-row"><button class="btn btn-gold" onclick="ModuleActions.parsePriceUpdate()">Uppdatera kurser</button></div>
         <div class="stamp" id="pasteStamp" style="margin-top:8px;"></div>
       `;
-      container.appendChild(priceBox);
+      main.appendChild(priceBox);
 
       const psBox = document.createElement('div'); psBox.className = 'text-box';
       psBox.innerHTML = `
@@ -84,61 +85,62 @@ Layout.register({
         <textarea id="psInput" class="field" placeholder="t.ex. Atlas Copco A P/S 3,4, Nibe P/S 2,1"></textarea>
         <div class="actions-row"><button class="btn btn-gold" onclick="ModuleActions.parsePS()">Tolka och fyll i</button></div>
       `;
-      container.appendChild(psBox);
+      main.appendChild(psBox);
     }
+
+    // --- Right: sector/geography distribution ---
+    const dist = document.createElement('div'); dist.className = 'aktier-dist';
+    dist.appendChild(this.donutBlock('Sektor', this.sectorEntries()));
+    dist.appendChild(this.donutBlock('Geografi', this.landEntries()));
+
+    grid.appendChild(menu); grid.appendChild(main); grid.appendChild(dist);
+    wrap.appendChild(grid);
+    container.appendChild(wrap);
   },
 
-  distribution(){
-    const wrap = document.createElement('div'); wrap.className = 'dist-wrap';
-    const totalValue = State.STOCKS.reduce((sum,s) => sum + s.price*s.antal, 0) || 1;
-
-    const sectorTotals = {};
+  sectorEntries(){
+    const totals = {};
     State.STOCKS.forEach(s => {
       const sec = s.tags[0] || 'Övrigt';
-      sectorTotals[sec] = (sectorTotals[sec] || 0) + s.price*s.antal;
+      totals[sec] = (totals[sec] || 0) + s.price*s.antal;
     });
-    const sectorEntries = Object.entries(sectorTotals).sort((a,b) => b[1]-a[1]);
+    return Object.entries(totals)
+      .sort((a,b) => b[1]-a[1])
+      .map(([label, val], i) => ({ label, val, color: this.SECTOR_COLORS[i % this.SECTOR_COLORS.length] }));
+  },
 
-    const sectorBar = document.createElement('div'); sectorBar.className = 'dist-bar';
-    const sectorLegend = document.createElement('div'); sectorLegend.className = 'dist-legend';
-    sectorEntries.forEach(([sec, val], i) => {
-      const pct = (val/totalValue)*100;
-      const color = this.SECTOR_COLORS[i % this.SECTOR_COLORS.length];
-      const seg = document.createElement('div'); seg.className = 'dist-seg';
-      seg.style.cssText = `flex:${pct} 0 0; background:${color};`;
-      seg.title = `${sec} ${pct.toFixed(1).replace('.',',')}%`;
-      sectorBar.appendChild(seg);
-      const item = document.createElement('span'); item.className = 'dist-legend-item';
-      item.innerHTML = `<span class="dot" style="background:${color}"></span>${sec} ${pct.toFixed(0)}%`;
-      sectorLegend.appendChild(item);
-    });
-
+  landEntries(){
     const seValue = State.STOCKS.filter(s => s.land === 'SE').reduce((sum,s) => sum + s.price*s.antal, 0);
-    const sePct = (seValue/totalValue)*100;
-    const foreignPct = 100 - sePct;
-    const foreignColor = '#5B8DEF';
+    const totalValue = State.STOCKS.reduce((sum,s) => sum + s.price*s.antal, 0);
+    const css = getComputedStyle(document.documentElement);
+    return [
+      { label:'Svenska', val:seValue, color:css.getPropertyValue('--gold').trim() },
+      { label:'Utländska', val:totalValue - seValue, color:this.FOREIGN_COLOR }
+    ];
+  },
 
-    const landBar = document.createElement('div'); landBar.className = 'dist-bar';
-    landBar.innerHTML = `
-      <div class="dist-seg" style="flex:${sePct} 0 0; background:var(--gold);" title="Svenska ${sePct.toFixed(1).replace('.',',')}%"></div>
-      <div class="dist-seg" style="flex:${foreignPct} 0 0; background:${foreignColor};" title="Utländska ${foreignPct.toFixed(1).replace('.',',')}%"></div>
-    `;
-    const landLegend = document.createElement('div'); landLegend.className = 'dist-legend';
-    landLegend.innerHTML = `
-      <span class="dist-legend-item"><span class="dot" style="background:var(--gold)"></span>Svenska ${sePct.toFixed(0)}%</span>
-      <span class="dist-legend-item"><span class="dot" style="background:${foreignColor}"></span>Utländska ${foreignPct.toFixed(0)}%</span>
-    `;
+  donutBlock(title, entries){
+    const total = entries.reduce((s,e) => s + e.val, 0) || 1;
+    let acc = 0;
+    const stops = entries.map(e => {
+      const start = acc; acc += (e.val/total)*100;
+      return `${e.color} ${start}% ${acc}%`;
+    }).join(', ');
 
-    const sectorLabel = document.createElement('div'); sectorLabel.className = 'dist-group-label'; sectorLabel.textContent = 'Sektor';
-    const landLabel = document.createElement('div'); landLabel.className = 'dist-group-label'; landLabel.style.marginTop = '10px'; landLabel.textContent = 'Geografi';
-
-    wrap.appendChild(sectorLabel);
-    wrap.appendChild(sectorBar);
-    wrap.appendChild(sectorLegend);
-    wrap.appendChild(landLabel);
-    wrap.appendChild(landBar);
-    wrap.appendChild(landLegend);
-    return wrap;
+    const block = document.createElement('div');
+    const label = document.createElement('div'); label.className = 'chip-group-label'; label.style.marginTop = '0'; label.textContent = title;
+    const wrap = document.createElement('div'); wrap.className = 'alloc-wrap';
+    const donut = document.createElement('div'); donut.className = 'donut';
+    donut.style.background = `conic-gradient(${stops})`;
+    const legend = document.createElement('div'); legend.className = 'legend';
+    legend.innerHTML = entries.map(e => {
+      const pct = (e.val/total)*100;
+      return `<div class="legend-row"><span class="dot" style="background:${e.color}"></span>
+        <span class="legend-text">${e.label} <b>${pct.toFixed(0)}%</b></span></div>`;
+    }).join('');
+    wrap.appendChild(donut); wrap.appendChild(legend);
+    block.appendChild(label); block.appendChild(wrap);
+    return block;
   },
 
   row(s, simple){

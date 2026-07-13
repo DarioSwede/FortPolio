@@ -13,6 +13,7 @@ const App = {
   wireHeader(){
     document.getElementById('refreshBtn').addEventListener('click', () => this.refreshMarketData());
     document.getElementById('switchEl').addEventListener('click', () => ModuleActions.toggleAmounts());
+    document.getElementById('simpleViewSwitchEl').addEventListener('click', () => ModuleActions.toggleSimpleView());
   },
 
   refreshAllModules(){
@@ -29,13 +30,16 @@ const App = {
     const cost = stockCostSEK + fundCost;
 
     document.getElementById('totalValue').textContent = Format.amount(total) + (State.hideAmounts ? '' : ' *');
-    const pct = ((total - cost) / cost) * 100;
+    const diff = total - cost;
+    const pct = (diff / cost) * 100;
+    const sign = pct >= 0 ? '+' : '';
     const el = document.getElementById('totalChange');
-    el.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(1).replace('.', ',') + '% sen köp';
+    el.textContent = `${sign}${pct.toFixed(1).replace('.', ',')}% · ${sign}${Format.amount(Math.abs(diff))} sen köp`;
     el.classList.toggle('neg', pct < 0);
 
     document.getElementById('hideLabel').textContent = State.hideAmounts ? 'Endast kurser' : 'Visa belopp';
     document.getElementById('switchEl').classList.toggle('on', State.hideAmounts);
+    document.getElementById('simpleViewSwitchEl').classList.toggle('on', State.simpleView);
   },
 
   async refreshMarketData(){
