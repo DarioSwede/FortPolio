@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfölj</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div id="lockScreen">
+  <h1>🔒 Portfölj</h1>
+  <input class="field" type="password" id="lockInput" placeholder="Lösenord" autofocus>
+  <button class="btn btn-gold" id="unlockBtn" onclick="Lock.tryUnlock()">Lås upp</button>
+  <div id="lockError"></div>
+</div>
+
+<div class="app" id="app">
+  <header>
+    <div class="eyebrow">
+      <span>Portfölj &middot; Avanza</span>
+      <div class="hide-toggle">
+        <button class="btn" style="padding:6px 10px; font-size:11px;" onclick="ModuleActions.openRekrypt()">🔑 Byt lösenord</button>
+        <span class="hide-toggle-label" id="hideLabel">Visa belopp</span>
+        <div class="switch" id="switchEl"><div class="knob"></div></div>
+      </div>
+    </div>
+    <div class="total-row">
+      <div class="total-value" id="totalValue">— kr</div>
+      <div class="total-change" id="totalChange">—</div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="refreshBtn">↻ Uppdatera kurser</button>
+      <span class="stamp" id="stamp">Ej uppdaterat än</span>
+    </div>
+  </header>
+
+  <div class="columns" id="columns"></div>
+
+  <div class="disclaimer">Symboler markerade med <span style="color:var(--gold)">*</span> är gissningar &mdash; kontrollera gärna. Börsöppettider är standardtider utan hänsyn till röda dagar/halvdagar. Kartans positioner är ungefärliga. Dra i modul-titeln för att flytta, dra i högerkanten för att ändra bredd.</div>
+</div>
+
+<div id="rekryptScreen" class="overlay hidden">
+  <div class="overlay-box">
+    <h3>Byt lösenord</h3>
+    <p>Ange ett nytt lösenord. Din data krypteras om direkt i webbläsaren - inget skickas någonstans. Kopiera sedan koden nedan och ersätt <code>ENCRYPTED_HOLDINGS</code>-blocket i <code>js/data.js</code> innan du laddar upp filerna igen.</p>
+    <div class="row-inputs">
+      <input class="field" type="password" id="newPass1" placeholder="Nytt lösenord">
+      <input class="field" type="password" id="newPass2" placeholder="Upprepa lösenord">
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-gold" onclick="ModuleActions.doRekrypt()">Kryptera om</button>
+      <button class="btn" onclick="ModuleActions.closeRekrypt()">Avbryt</button>
+    </div>
+    <div id="rekryptError" style="color:var(--loss); font-family:'IBM Plex Mono',monospace; font-size:12px; margin-top:8px;"></div>
+    <textarea id="rekryptOutput" class="field output" readonly></textarea>
+  </div>
+</div>
+
+<!-- Data (icke-känslig referensdata + krypterad blob) -->
+<script src="js/data.js"></script>
+
+<!-- Core: laddningsordning spelar roll, senare filer bygger på tidigare -->
+<script src="js/core/storage.js"></script>
+<script src="js/core/crypto.js"></script>
+<script src="js/core/format.js"></script>
+<script src="js/core/state.js"></script>
+<script src="js/core/market.js"></script>
+<script src="js/core/layout.js"></script>
+<script src="js/core/actions.js"></script>
+<script src="js/core/lock.js"></script>
+<script src="js/main.js"></script>
+
+<!-- Moduler: varje fil registrerar sig själv hos Layout. Ordningen här spelar
+     ingen roll för funktionalitet - bara vilken modul som råkar läsas in
+     "sist" om man byter State.layout.order manuellt. Lägg till en ny rad
+     här när du skapar en ny modul-fil. -->
+<script src="js/modules/aktier.js"></script>
+<script src="js/modules/fonder.js"></script>
+<script src="js/modules/allokering.js"></script>
+<script src="js/modules/ravaror.js"></script>
+<script src="js/modules/vinnareforlorare.js"></script>
+<script src="js/modules/veckanstips.js"></script>
+<script src="js/modules/borsen.js"></script>
+
+<script>
+  Lock.init();
+</script>
+</body>
+</html>
