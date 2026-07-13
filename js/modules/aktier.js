@@ -2,7 +2,7 @@
 Layout.register({
   id: 'aktier',
   title: 'Aktier',
-  defaultWidth: 760,
+  defaultWidth: 1520,
 
   build(container){
     const ALL_SECTORS = [...new Set(State.STOCKS.flatMap(s => s.tags))];
