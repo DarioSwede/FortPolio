@@ -30,6 +30,12 @@ const ModuleActions = {
     App.refreshAllModules();
   },
 
+  toggleSimpleView(){
+    State.simpleView = !State.simpleView;
+    State.save();
+    Layout.refreshModule('aktier');
+  },
+
   parsePriceUpdate(){
     const raw = document.getElementById('priceInput').value;
     let matched = 0, unmatched = [];

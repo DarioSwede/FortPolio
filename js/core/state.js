@@ -12,6 +12,7 @@ const State = {
 
   ps: {},
   hideAmounts: false,
+  simpleView: false,
   activeFilter: { kind:'all', value:null },
   targetAktier: 35,
   omxData: { value:null, changePct:null, status:'idle', symbolUsed:null },
@@ -37,6 +38,7 @@ const State = {
         if(st.commoditySymbols){ this.COMMODITIES.forEach(c => { if(st.commoditySymbols[c.id] !== undefined) c.symbol = st.commoditySymbols[c.id]; }); }
         this.ps = st.ps || {};
         this.hideAmounts = !!st.hideAmounts;
+        this.simpleView = !!st.simpleView;
         if(st.targetAktier !== undefined) this.targetAktier = st.targetAktier;
         if(st.layout) this.layout = st.layout;
         if(st.veckansTips) this.veckansTips = st.veckansTips;
@@ -48,7 +50,7 @@ const State = {
     const symbols = {}; this.STOCKS.forEach(s => symbols[s.id] = s.symbol);
     const commoditySymbols = {}; this.COMMODITIES.forEach(c => commoditySymbols[c.id] = c.symbol);
     const payload = JSON.stringify({
-      symbols, commoditySymbols, ps:this.ps, hideAmounts:this.hideAmounts,
+      symbols, commoditySymbols, ps:this.ps, hideAmounts:this.hideAmounts, simpleView:this.simpleView,
       targetAktier:this.targetAktier, layout:this.layout, veckansTips:this.veckansTips
     });
     await Storage.set('portfolio-state', payload);
