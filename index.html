@@ -13,6 +13,7 @@
 <div id="lockScreen">
   <h1>🔒 Portfölj</h1>
   <input class="field" type="password" id="lockInput" placeholder="Lösenord" autofocus>
+  <label class="remember-row"><input type="checkbox" id="rememberMe"> Kom ihåg mig på den här enheten</label>
   <button class="btn btn-gold" id="unlockBtn" onclick="Lock.tryUnlock()">Lås upp</button>
   <div id="lockError"></div>
 </div>
@@ -23,6 +24,7 @@
       <span>Portfölj &middot; Avanza</span>
       <div class="hide-toggle">
         <button class="btn" style="padding:6px 10px; font-size:11px;" onclick="ModuleActions.openRekrypt()">🔑 Byt lösenord</button>
+        <button class="btn" style="padding:6px 10px; font-size:11px;" onclick="Lock.relock()">🔒 Lås</button>
         <button class="btn" style="padding:6px 10px; font-size:11px;" id="refreshBtn">↻ Uppdatera kurser</button>
         <span class="hide-toggle-label">Enkel vy</span>
         <div class="switch" id="simpleViewSwitchEl"><div class="knob"></div></div>

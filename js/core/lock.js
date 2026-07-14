@@ -1,13 +1,21 @@
 /* lock.js - lösenordsskärm + "byt lösenord" (krypterar om lokalt) */
 const Lock = {
-  init(){
+  REMEMBER_KEY: 'remembered-pw',
+
+  async init(){
     document.getElementById('lockInput').addEventListener('keydown', e => {
       if(e.key === 'Enter') this.tryUnlock();
     });
+
+    const saved = await Storage.get(this.REMEMBER_KEY);
+    if(saved && saved.value){
+      document.getElementById('rememberMe').checked = true;
+      await this.tryUnlock(saved.value, true);
+    }
   },
 
-  async tryUnlock(){
-    const val = document.getElementById('lockInput').value;
+  async tryUnlock(passwordOverride, isAutoAttempt){
+    const val = passwordOverride !== undefined ? passwordOverride : document.getElementById('lockInput').value;
     const btn = document.getElementById('unlockBtn');
     const errEl = document.getElementById('lockError');
     btn.disabled = true; errEl.textContent = '';
@@ -17,11 +25,24 @@ const Lock = {
       State.FUNDS = data.FUNDS;
       State.assignIds();
       document.getElementById('lockScreen').classList.add('hidden');
+      const remember = document.getElementById('rememberMe').checked;
+      await Storage.set(this.REMEMBER_KEY, remember ? val : '');
       App.start();
     }catch(e){
-      errEl.textContent = 'Fel lösenord';
+      await Storage.set(this.REMEMBER_KEY, '');
+      if(!isAutoAttempt) errEl.textContent = 'Fel lösenord';
     }
     btn.disabled = false;
+  },
+
+  async relock(){
+    await Storage.set(this.REMEMBER_KEY, '');
+    State.STOCKS = [];
+    State.FUNDS = [];
+    document.getElementById('lockInput').value = '';
+    document.getElementById('rememberMe').checked = false;
+    document.getElementById('lockError').textContent = '';
+    document.getElementById('lockScreen').classList.remove('hidden');
   },
 
   openRekrypt(){
@@ -47,5 +68,7 @@ const Lock = {
     outEl.value = out;
     outEl.style.display = 'block';
     outEl.select();
+    // det gamla lösenordet slutar fungera så fort den nya blobben klistras in i data.js
+    await Storage.set(this.REMEMBER_KEY, '');
   }
 };
