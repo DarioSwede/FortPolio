@@ -11,6 +11,9 @@ Layout.register({
     return css.getPropertyValue('--loss').trim();
   },
 
+  COLOR_AKTIER: 'var(--gold)',
+  COLOR_FONDER: '#5B8DEF',
+
   build(container){
     const stockValueSEK = State.STOCKS.filter(s => s.curr === 'SEK').reduce((sum,s) => sum + s.price*s.antal, 0);
     const fundValue = State.FUNDS.reduce((sum,f) => sum + f.varde, 0);
@@ -18,18 +21,20 @@ Layout.register({
     const actualAktier = (stockValueSEK / total) * 100;
     const actualFonder = (fundValue / total) * 100;
     const targetFonder = 100 - State.targetAktier;
-    const colorAktier = this.deviationColor(actualAktier, State.targetAktier);
-    const colorFonder = this.deviationColor(actualFonder, targetFonder);
+    const statusAktier = this.deviationColor(actualAktier, State.targetAktier);
+    const statusFonder = this.deviationColor(actualFonder, targetFonder);
 
     const wrap = document.createElement('div'); wrap.className = 'alloc-wrap';
     const donut = document.createElement('div'); donut.className = 'donut';
-    donut.style.background = `conic-gradient(${colorAktier} 0% ${actualAktier}%, ${colorFonder} ${actualAktier}% 100%)`;
+    donut.style.background = `conic-gradient(${this.COLOR_AKTIER} 0% ${actualAktier}%, ${this.COLOR_FONDER} ${actualAktier}% 100%)`;
     const legend = document.createElement('div'); legend.className = 'legend';
     legend.innerHTML = `
-      <div class="legend-row"><span class="dot" style="background:${colorAktier}"></span>
-        <span class="legend-text">Aktier <b>${actualAktier.toFixed(1).replace('.',',')}%</b> &middot; mål ${State.targetAktier}%</span></div>
-      <div class="legend-row"><span class="dot" style="background:${colorFonder}"></span>
-        <span class="legend-text">Fonder <b>${actualFonder.toFixed(1).replace('.',',')}%</b> &middot; mål ${targetFonder}%</span></div>
+      <div class="legend-row"><span class="dot" style="background:${this.COLOR_AKTIER}"></span>
+        <span class="legend-text">Aktier <b>${actualAktier.toFixed(1).replace('.',',')}%</b> &middot; mål ${State.targetAktier}%</span>
+        <span class="dot" title="Avvikelse mot mål" style="background:${statusAktier}; margin-left:auto;"></span></div>
+      <div class="legend-row"><span class="dot" style="background:${this.COLOR_FONDER}"></span>
+        <span class="legend-text">Fonder <b>${actualFonder.toFixed(1).replace('.',',')}%</b> &middot; mål ${targetFonder}%</span>
+        <span class="dot" title="Avvikelse mot mål" style="background:${statusFonder}; margin-left:auto;"></span></div>
     `;
     wrap.appendChild(donut); wrap.appendChild(legend);
     container.appendChild(wrap);
