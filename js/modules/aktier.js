@@ -98,15 +98,32 @@ Layout.register({
     container.appendChild(wrap);
   },
 
+  MIN_SLICE_SHARE: 0.04,
+
   sectorEntries(){
     const totals = {};
     State.STOCKS.forEach(s => {
       const sec = s.tags[0] || 'Övrigt';
       totals[sec] = (totals[sec] || 0) + s.price*s.antal;
     });
-    return Object.entries(totals)
+    const total = Object.values(totals).reduce((a,b) => a+b, 0) || 1;
+    const sorted = Object.entries(totals).sort((a,b) => b[1]-a[1]);
+
+    const main = [];
+    let rest = 0;
+    sorted.forEach(([label, val]) => {
+      if(val/total >= this.MIN_SLICE_SHARE) main.push([label, val]);
+      else rest += val;
+    });
+    if(rest > 0){
+      const other = main.find(([label]) => label === 'Övrigt');
+      if(other) other[1] += rest;
+      else main.push(['Övrigt', rest]);
+    }
+
+    return main
       .sort((a,b) => b[1]-a[1])
-      .map(([label, val], i) => ({ label, val, color: this.SECTOR_COLORS[i % this.SECTOR_COLORS.length] }));
+      .map(([label, val], i) => ({ label, val, color: label === 'Övrigt' ? 'var(--text-muted)' : this.SECTOR_COLORS[i % this.SECTOR_COLORS.length] }));
   },
 
   landEntries(){
