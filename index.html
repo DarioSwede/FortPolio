@@ -58,6 +58,14 @@
       <span>Lås portföljen</span>
       <button class="btn" onclick="Lock.relock()">🔒 Lås</button>
     </div>
+    <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <span>Anslutning</span>
+        <span id="httpsIndicator" class="conn-badge">—</span>
+      </div>
+      <div id="ipInfo" style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-muted);">—</div>
+      <p style="font-size:10.5px; color:var(--text-muted); margin:0;">IP hämtas via en extern tjänst (ipify.org) när den här rutan öppnas. Vi kan inte se eller visa om du kör VPN - det finns inget pålitligt sätt att avgöra det i webbläsaren.</p>
+    </div>
     <div style="display:flex; justify-content:flex-end; margin-top:14px;">
       <button class="btn btn-gold" onclick="ModuleActions.closeSettings()">Stäng</button>
     </div>
@@ -96,6 +104,7 @@
 <!-- Core: laddningsordning spelar roll, senare filer bygger på tidigare -->
 <script src="js/core/storage.js"></script>
 <script src="js/core/github.js"></script>
+<script src="js/core/network.js"></script>
 <script src="js/core/crypto.js"></script>
 <script src="js/core/format.js"></script>
 <script src="js/core/state.js"></script>

@@ -197,6 +197,10 @@ h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; 
 .settings-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-top:1px solid var(--border); }
 .settings-row:first-of-type{ border-top:none; }
 
+.conn-badge{ font-family:'IBM Plex Mono',monospace; font-size:11px; padding:4px 10px; border-radius:999px; border:1px solid var(--border); color:var(--text-muted); white-space:nowrap; }
+.conn-badge.ok{ border-color:var(--gain); color:var(--gain); background:rgba(47,191,157,.10); }
+.conn-badge.warn{ border-color:var(--loss); color:var(--loss); background:rgba(226,87,76,.10); }
+
 /* ============================================================
    MOBILE - compact two-column layout
    ============================================================ */

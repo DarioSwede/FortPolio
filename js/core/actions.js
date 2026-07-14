@@ -83,7 +83,22 @@ const ModuleActions = {
   closeRekrypt(){ Lock.closeRekrypt(); },
   doRekrypt(){ Lock.doRekrypt(); },
 
-  openSettings(){ document.getElementById('settingsScreen').classList.remove('hidden'); },
+  async openSettings(){
+    document.getElementById('settingsScreen').classList.remove('hidden');
+
+    const badge = document.getElementById('httpsIndicator');
+    const https = NetworkInfo.isHttps();
+    badge.textContent = https ? '🛡️ Krypterad (HTTPS)' : '⚠️ Okrypterad (HTTP)';
+    badge.className = 'conn-badge ' + (https ? 'ok' : 'warn');
+
+    const ipEl = document.getElementById('ipInfo');
+    ipEl.textContent = 'Hämtar IP …';
+    const { v4, v6 } = await NetworkInfo.fetchIPs();
+    const parts = [];
+    if(v4) parts.push(`IPv4: ${v4}`);
+    if(v6) parts.push(`IPv6: ${v6}`);
+    ipEl.textContent = parts.length ? parts.join(' · ') : 'Kunde inte hämta IP just nu.';
+  },
   closeSettings(){ document.getElementById('settingsScreen').classList.add('hidden'); },
 
   async copyRekryptOutput(){
