@@ -45,30 +45,64 @@ const Lock = {
     document.getElementById('lockScreen').classList.remove('hidden');
   },
 
-  openRekrypt(){
+  async openRekrypt(){
     document.getElementById('rekryptScreen').classList.remove('hidden');
     document.getElementById('newPass1').value = '';
     document.getElementById('newPass2').value = '';
     document.getElementById('rekryptError').textContent = '';
+    document.getElementById('rekryptStatus').textContent = '';
     document.getElementById('rekryptOutput').style.display = 'none';
+    document.getElementById('copyRekryptBtn').style.display = 'none';
+    const savedToken = await GithubSync.getToken();
+    document.getElementById('githubToken').value = savedToken;
+    document.getElementById('rememberToken').checked = !!savedToken;
   },
   closeRekrypt(){ document.getElementById('rekryptScreen').classList.add('hidden'); },
 
   async doRekrypt(){
     const p1 = document.getElementById('newPass1').value;
     const p2 = document.getElementById('newPass2').value;
+    const tokenInput = document.getElementById('githubToken').value.trim();
+    const rememberToken = document.getElementById('rememberToken').checked;
     const errEl = document.getElementById('rekryptError');
+    const statusEl = document.getElementById('rekryptStatus');
+    const btn = document.getElementById('rekryptBtn');
+    const outEl = document.getElementById('rekryptOutput');
+    const copyBtn = document.getElementById('copyRekryptBtn');
+    errEl.textContent = ''; statusEl.textContent = '';
+    outEl.style.display = 'none'; copyBtn.style.display = 'none';
+
     if(!p1 || p1.length < 4){ errEl.textContent = 'Minst 4 tecken.'; return; }
     if(p1 !== p2){ errEl.textContent = 'Lösenorden matchar inte.'; return; }
-    errEl.textContent = '';
 
     const blob = await Crypto.encrypt(p1, { STOCKS: State.STOCKS, FUNDS: State.FUNDS });
-    const out = `ENCRYPTED_HOLDINGS: { salt:"${blob.salt}", iv:"${blob.iv}", iterations:${blob.iterations}, ct:"${blob.ct}" },`;
-    const outEl = document.getElementById('rekryptOutput');
-    outEl.value = out;
-    outEl.style.display = 'block';
-    outEl.select();
-    // det gamla lösenordet slutar fungera så fort den nya blobben klistras in i data.js
-    await Storage.set(this.REMEMBER_KEY, '');
+    const showManualFallback = () => {
+      outEl.value = GithubSync.buildEncryptedBlock(blob);
+      outEl.style.display = 'block';
+      copyBtn.style.display = 'inline-block';
+      outEl.select();
+    };
+
+    const token = tokenInput || await GithubSync.getToken();
+    if(!token){
+      errEl.textContent = 'Ingen GitHub-token angiven - klistra in koden nedan manuellt i js/data.js istället.';
+      showManualFallback();
+      // det gamla lösenordet slutar fungera så fort den nya blobben klistras in i data.js
+      await Storage.set(this.REMEMBER_KEY, '');
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Sparar till GitHub …';
+    try{
+      await GithubSync.pushNewBlob(token, blob);
+      await GithubSync.setToken(rememberToken ? token : '');
+      await Storage.set(this.REMEMBER_KEY, '');
+      statusEl.textContent = `✓ Sparat till GitHub (${GithubSync.OWNER}/${GithubSync.REPO}@${GithubSync.BRANCH}).`;
+    }catch(e){
+      errEl.textContent = `Kunde inte spara automatiskt (${e.message}). Kopiera koden nedan och klistra in i js/data.js istället.`;
+      showManualFallback();
+      await Storage.set(this.REMEMBER_KEY, '');
+    }
+    btn.disabled = false; btn.textContent = 'Kryptera om och spara';
   }
 };

@@ -83,5 +83,18 @@ const ModuleActions = {
   closeRekrypt(){ Lock.closeRekrypt(); },
   doRekrypt(){ Lock.doRekrypt(); },
 
+  async copyRekryptOutput(){
+    const outEl = document.getElementById('rekryptOutput');
+    const btn = document.getElementById('copyRekryptBtn');
+    try{
+      await navigator.clipboard.writeText(outEl.value);
+      const old = btn.textContent;
+      btn.textContent = 'Kopierat!';
+      setTimeout(() => { btn.textContent = old; }, 1500);
+    }catch(e){
+      outEl.select();
+    }
+  },
+
   refreshAll(){ App.refreshMarketData(); }
 };

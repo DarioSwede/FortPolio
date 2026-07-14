@@ -49,17 +49,26 @@
 <div id="rekryptScreen" class="overlay hidden">
   <div class="overlay-box">
     <h3>Byt lösenord</h3>
-    <p>Ange ett nytt lösenord. Din data krypteras om direkt i webbläsaren - inget skickas någonstans. Kopiera sedan koden nedan och ersätt <code>ENCRYPTED_HOLDINGS</code>-blocket i <code>js/data.js</code> innan du laddar upp filerna igen.</p>
+    <p>Ange ett nytt lösenord. Din data krypteras om direkt i webbläsaren - inget skickas någonstans utom till GitHub (om du anger en token nedan), som sparar den nya koden i <code>js/data.js</code> åt dig automatiskt.</p>
     <div class="row-inputs">
       <input class="field" type="password" id="newPass1" placeholder="Nytt lösenord">
       <input class="field" type="password" id="newPass2" placeholder="Upprepa lösenord">
     </div>
-    <div style="display:flex; gap:8px;">
-      <button class="btn btn-gold" onclick="ModuleActions.doRekrypt()">Kryptera om</button>
+    <div class="row-inputs">
+      <input class="field" type="password" id="githubToken" placeholder="GitHub-token (fine-grained, endast detta repo)">
+    </div>
+    <label class="remember-row"><input type="checkbox" id="rememberToken"> Kom ihåg token på den här enheten</label>
+    <p style="margin-top:8px;">Skapa en fine-grained token med enbart <code>Contents: Read and write</code> för <code>darioswede/fortpolio</code> på github.com/settings/personal-access-tokens/new. Utan token visas koden istället för manuell kopiering.</p>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <button class="btn btn-gold" id="rekryptBtn" onclick="ModuleActions.doRekrypt()">Kryptera om och spara</button>
       <button class="btn" onclick="ModuleActions.closeRekrypt()">Avbryt</button>
     </div>
+    <div id="rekryptStatus" style="color:var(--gain); font-family:'IBM Plex Mono',monospace; font-size:12px; margin-top:8px;"></div>
     <div id="rekryptError" style="color:var(--loss); font-family:'IBM Plex Mono',monospace; font-size:12px; margin-top:8px;"></div>
     <textarea id="rekryptOutput" class="field output" readonly></textarea>
+    <div style="display:flex; justify-content:flex-end; margin-top:6px;">
+      <button class="btn" id="copyRekryptBtn" onclick="ModuleActions.copyRekryptOutput()" style="display:none;">Kopiera</button>
+    </div>
   </div>
 </div>
 
@@ -68,6 +77,7 @@
 
 <!-- Core: laddningsordning spelar roll, senare filer bygger på tidigare -->
 <script src="js/core/storage.js"></script>
+<script src="js/core/github.js"></script>
 <script src="js/core/crypto.js"></script>
 <script src="js/core/format.js"></script>
 <script src="js/core/state.js"></script>
