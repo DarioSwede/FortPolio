@@ -28,6 +28,7 @@ header{ margin-bottom:22px; }
 
 .hide-toggle{ display:flex; align-items:center; gap:10px; margin-left:auto; }
 .hide-toggle-label{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; color:var(--text-muted); text-transform:uppercase;}
+.icon-btn{ padding:6px 10px; font-size:14px; line-height:1; }
 .switch{ position:relative; width:42px; height:24px; background:var(--surface-hi); border:1px solid var(--border); border-radius:999px; cursor:pointer; flex-shrink:0; transition:background .25s,border-color .25s;}
 .switch .knob{ position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:var(--text-muted); transition:transform .25s,background .25s;}
 .switch.on{ background:rgba(214,167,86,.18); border-color:var(--gold);}
@@ -85,7 +86,7 @@ h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; 
 .aktier-menu{ display:flex; flex-direction:column; gap:4px; }
 .aktier-dist{ display:flex; flex-direction:column; gap:22px; }
 @container (max-width: 760px){
-  .aktier-layout{ grid-template-columns:1fr; }
+  .aktier-layout{ grid-template-columns:minmax(0,1fr); }
   .chip-col{ flex-direction:row; flex-wrap:wrap; }
   .chip-col .chip{ width:auto; }
 }
@@ -193,6 +194,9 @@ h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; 
 .overlay-box .row-inputs input{ flex:1; min-width:160px; padding:8px 10px; }
 .overlay-box textarea.output{ display:none; margin-top:12px; min-height:110px; width:100%; }
 
+.settings-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-top:1px solid var(--border); }
+.settings-row:first-of-type{ border-top:none; }
+
 /* ============================================================
    MOBILE - compact two-column layout
    ============================================================ */
@@ -205,12 +209,12 @@ h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; 
   .actions{ justify-content:center; }
 
   .columns{ display:block; column-count:2; column-gap:10px; }
-  .panel{ display:inline-block; width:100%; break-inside:avoid; margin-bottom:10px; }
+  .panel{ display:inline-block; width:100%; min-width:0; break-inside:avoid; margin-bottom:10px; }
   .resize-handle{ display:none; }
   .drag-dots{ display:none; }
 
   .card{ padding:11px; }
   .card-head{ margin-bottom:9px; }
-  .grid-list{ gap:7px; margin-top:7px; }
+  .grid-list{ grid-template-columns:minmax(0,1fr); gap:7px; margin-top:7px; }
   .text-box{ padding:11px; margin-top:12px; }
 }

@@ -42,6 +42,8 @@ const Lock = {
     document.getElementById('lockInput').value = '';
     document.getElementById('rememberMe').checked = false;
     document.getElementById('lockError').textContent = '';
+    document.getElementById('settingsScreen').classList.add('hidden');
+    document.getElementById('rekryptScreen').classList.add('hidden');
     document.getElementById('lockScreen').classList.remove('hidden');
   },
 

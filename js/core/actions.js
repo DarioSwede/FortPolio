@@ -83,6 +83,9 @@ const ModuleActions = {
   closeRekrypt(){ Lock.closeRekrypt(); },
   doRekrypt(){ Lock.doRekrypt(); },
 
+  openSettings(){ document.getElementById('settingsScreen').classList.remove('hidden'); },
+  closeSettings(){ document.getElementById('settingsScreen').classList.add('hidden'); },
+
   async copyRekryptOutput(){
     const outEl = document.getElementById('rekryptOutput');
     const btn = document.getElementById('copyRekryptBtn');

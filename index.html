@@ -6,7 +6,7 @@
 <title>Portfölj</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/styles.css?v=2">
 </head>
 <body>
 
@@ -23,13 +23,10 @@
     <div class="eyebrow">
       <span>Portfölj &middot; Avanza</span>
       <div class="hide-toggle">
-        <button class="btn" style="padding:6px 10px; font-size:11px;" onclick="ModuleActions.openRekrypt()">🔑 Byt lösenord</button>
-        <button class="btn" style="padding:6px 10px; font-size:11px;" onclick="Lock.relock()">🔒 Lås</button>
         <button class="btn" style="padding:6px 10px; font-size:11px;" id="refreshBtn">↻ Uppdatera kurser</button>
-        <span class="hide-toggle-label">Enkel vy</span>
-        <div class="switch" id="simpleViewSwitchEl"><div class="knob"></div></div>
         <span class="hide-toggle-label" id="hideLabel">Visa belopp</span>
         <div class="switch" id="switchEl"><div class="knob"></div></div>
+        <button class="btn icon-btn" onclick="ModuleActions.openSettings()" title="Inställningar">⚙</button>
       </div>
     </div>
     <div class="total-row">
@@ -44,6 +41,27 @@
   <div class="columns" id="columns"></div>
 
   <div class="disclaimer">Symboler markerade med <span style="color:var(--gold)">*</span> är gissningar &mdash; kontrollera gärna. Börsöppettider är standardtider utan hänsyn till röda dagar/halvdagar. Kartans positioner är ungefärliga. Dra i modul-titeln för att flytta, dra i högerkanten för att ändra bredd.</div>
+</div>
+
+<div id="settingsScreen" class="overlay hidden">
+  <div class="overlay-box">
+    <h3>Inställningar</h3>
+    <div class="settings-row">
+      <span>Enkel vy (aktier)</span>
+      <div class="switch" id="simpleViewSwitchEl"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row">
+      <span>Byt lösenord</span>
+      <button class="btn" onclick="ModuleActions.closeSettings(); ModuleActions.openRekrypt();">🔑 Byt lösenord</button>
+    </div>
+    <div class="settings-row">
+      <span>Lås portföljen</span>
+      <button class="btn" onclick="Lock.relock()">🔒 Lås</button>
+    </div>
+    <div style="display:flex; justify-content:flex-end; margin-top:14px;">
+      <button class="btn btn-gold" onclick="ModuleActions.closeSettings()">Stäng</button>
+    </div>
+  </div>
 </div>
 
 <div id="rekryptScreen" class="overlay hidden">
