@@ -35,7 +35,6 @@ const Layout = {
 
     const head = document.createElement('div');
     head.className = 'card-head';
-    head.draggable = true;
     head.innerHTML = `<h2 class="section"><span class="drag-dots">⠿</span> ${mod.title}</h2>`;
     this.wireDrag(head, panel);
 
@@ -55,32 +54,54 @@ const Layout = {
     return panel;
   },
 
+  // Egen drag-implementation via Pointer Events (istället för HTML5 drag-and-drop,
+  // som inte stöder touch) - fungerar likadant med mus, penna och finger.
   wireDrag(handleEl, panel){
-    handleEl.addEventListener('dragstart', e => {
-      e.dataTransfer.setData('text/plain', panel.dataset.id);
-      panel.classList.add('dragging');
-    });
-    handleEl.addEventListener('dragend', () => panel.classList.remove('dragging'));
+    let dragOverTarget = null;
 
-    panel.addEventListener('dragover', e => {
+    const findPanelAt = (x, y) => {
+      const el = document.elementFromPoint(x, y);
+      const found = el ? el.closest('.panel') : null;
+      return found && found !== panel ? found : null;
+    };
+
+    const onMove = e => {
       e.preventDefault();
-      panel.classList.add('drag-over');
-    });
-    panel.addEventListener('dragleave', () => panel.classList.remove('drag-over'));
-    panel.addEventListener('drop', e => {
+      const target = findPanelAt(e.clientX, e.clientY);
+      if(target !== dragOverTarget){
+        if(dragOverTarget) dragOverTarget.classList.remove('drag-over');
+        if(target) target.classList.add('drag-over');
+        dragOverTarget = target;
+      }
+    };
+
+    const onUp = () => {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointercancel', onUp);
+      panel.classList.remove('dragging');
+
+      if(dragOverTarget){
+        dragOverTarget.classList.remove('drag-over');
+        const order = State.layout.order;
+        const from = order.indexOf(panel.dataset.id);
+        const to = order.indexOf(dragOverTarget.dataset.id);
+        dragOverTarget = null;
+        if(from === -1 || to === -1 || from === to) return;
+        order.splice(from, 1);
+        order.splice(to, 0, panel.dataset.id);
+        State.save();
+        this.renderAll();
+      }
+    };
+
+    handleEl.addEventListener('pointerdown', e => {
+      if(e.button !== undefined && e.button !== 0) return;
+      panel.classList.add('dragging');
+      document.addEventListener('pointermove', onMove, { passive:false });
+      document.addEventListener('pointerup', onUp);
+      document.addEventListener('pointercancel', onUp);
       e.preventDefault();
-      panel.classList.remove('drag-over');
-      const draggedId = e.dataTransfer.getData('text/plain');
-      const targetId = panel.dataset.id;
-      if(draggedId === targetId) return;
-      const order = State.layout.order;
-      const from = order.indexOf(draggedId);
-      const to = order.indexOf(targetId);
-      if(from === -1 || to === -1) return;
-      order.splice(from, 1);
-      order.splice(to, 0, draggedId);
-      State.save();
-      this.renderAll();
     });
   },
 

@@ -54,7 +54,7 @@ input.field:focus, textarea.field:focus{ outline:none; border-color:var(--gold);
 .panel.drag-over{ outline:2px dashed var(--gold); outline-offset:4px; border-radius:10px; }
 
 .card{ background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; height:100%; }
-.card-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; cursor:grab; user-select:none; }
+.card-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; cursor:grab; user-select:none; touch-action:none; }
 .card-head:active{ cursor:grabbing; }
 h2.section{ font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; letter-spacing:.03em; color:var(--text-muted); text-transform:uppercase; display:flex; align-items:center; gap:6px; }
 h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; }
@@ -215,7 +215,6 @@ h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; 
   .columns{ display:block; column-count:2; column-gap:10px; }
   .panel{ display:inline-block; width:100%; min-width:0; break-inside:avoid; margin-bottom:10px; }
   .resize-handle{ display:none; }
-  .drag-dots{ display:none; }
 
   .card{ padding:11px; }
   .card-head{ margin-bottom:9px; }
