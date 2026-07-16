@@ -6,7 +6,7 @@
 <title>Portfölj</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=2">
+<link rel="stylesheet" href="css/styles.css?v=3">
 </head>
 <body>
 
@@ -22,6 +22,7 @@
   <header>
     <div class="eyebrow">
       <span>Portfölj &middot; Avanza</span>
+      <div class="overview-donuts" id="overviewDonuts"></div>
       <div class="hide-toggle">
         <button class="btn" style="padding:6px 10px; font-size:11px;" id="refreshBtn">↻ Uppdatera kurser</button>
         <span class="hide-toggle-label" id="hideLabel">Visa belopp</span>
@@ -39,8 +40,6 @@
     </div>
   </header>
 
-  <div class="overview-donuts" id="overviewDonuts"></div>
-
   <div class="columns" id="columns"></div>
 
   <div class="disclaimer">Symboler markerade med <span style="color:var(--gold)">*</span> är gissningar &mdash; kontrollera gärna. Börsöppettider är standardtider utan hänsyn till röda dagar/halvdagar. Kartans positioner är ungefärliga. Dra i modul-titeln för att flytta, dra i högerkanten för att ändra bredd.</div>
@@ -52,6 +51,16 @@
     <div class="settings-row">
       <span>Enkel vy (aktier)</span>
       <div class="switch" id="simpleViewSwitchEl"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+      <span>Mål­fördelning aktier/fonder</span>
+      <div class="target-row" style="margin-top:0; padding-top:0; border-top:none;">
+        <label>Mål aktier</label>
+        <input class="field" type="number" min="0" max="100" id="settingsTargetAktier" onchange="ModuleActions.setTargetAktier(this.value)">
+        <span style="color:var(--text-muted); font-size:11px;">%</span>
+        <label style="margin-left:10px;">Fonder</label>
+        <span id="settingsTargetFonder" style="font-family:'IBM Plex Mono',monospace; font-size:12px;">—</span>
+      </div>
     </div>
     <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:4px;">
       <span>Visa moduler</span>
@@ -146,6 +155,7 @@
 <script src="js/modules/allokering.js"></script>
 <script src="js/modules/historik.js"></script>
 <script src="js/modules/ravaror.js"></script>
+<script src="js/modules/valutor.js"></script>
 <script src="js/modules/vinnareforlorare.js"></script>
 <script src="js/modules/utdelning.js"></script>
 <script src="js/modules/veckanstips.js"></script>

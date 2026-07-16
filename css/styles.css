@@ -11,7 +11,7 @@ body{
   background:var(--bg); color:var(--text); font-family:'Inter',sans-serif;
   min-height:100vh; padding:28px 14px 90px; -webkit-font-smoothing:antialiased;
 }
-.app{ max-width:1600px; margin:0 auto; }
+.app{ max-width:1900px; margin:0 auto; }
 code{ background:var(--surface-hi); padding:1px 5px; border-radius:4px; font-family:'IBM Plex Mono',monospace; font-size:.9em; }
 
 /* ============================================================
@@ -49,9 +49,13 @@ input.field:focus, textarea.field:focus{ outline:none; border-color:var(--gold);
 /* ============================================================
    LAYOUT ENGINE (draggable / resizable panels)
    ============================================================ */
-.overview-donuts{ display:flex; justify-content:center; flex-wrap:wrap; gap:28px 40px; margin-bottom:14px; }
+.overview-donuts{ display:flex; flex-wrap:wrap; gap:10px 24px; }
 .overview-donuts.hidden{ display:none; }
-.overview-donuts > div{ flex:1 1 220px; max-width:340px; min-width:200px; }
+.overview-donuts > div{ min-width:120px; max-width:190px; }
+.overview-donuts .chip-group-label{ font-size:9px; margin-bottom:3px; }
+.overview-donuts .percent-bar{ height:6px !important; }
+.overview-donuts .bar-legend{ margin-top:4px; gap:4px 10px; }
+.overview-donuts .bar-legend-item{ font-size:9.5px; }
 
 .percent-bar{ display:flex; width:100%; border-radius:999px; overflow:hidden; background:var(--surface-hi); }
 .percent-bar span{ display:block; height:100%; }

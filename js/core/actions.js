@@ -16,6 +16,10 @@ const ModuleActions = {
     const c = State.COMMODITIES.find(x => x.id === id); if(!c) return;
     c.symbol = val.trim(); State.save();
   },
+  setCurrencySymbol(id, val){
+    const c = State.CURRENCIES.find(x => x.id === id); if(!c) return;
+    c.symbol = val.trim(); State.save();
+  },
   setTargetAktier(val){
     let n = parseFloat(val);
     if(isNaN(n)) n = 35;
@@ -23,6 +27,8 @@ const ModuleActions = {
     State.save();
     Layout.refreshModule('allokering');
     Overview.render();
+    const targetFonderEl = document.getElementById('settingsTargetFonder');
+    if(targetFonderEl) targetFonderEl.textContent = (100 - State.targetAktier) + '%';
   },
 
   toggleAmounts(){
@@ -52,9 +58,11 @@ const ModuleActions = {
 
       const stockMatch = State.STOCKS.find(s => s.name.toLowerCase().includes(query) || query.includes(s.name.toLowerCase().split(' ')[0]));
       const commodityMatch = !stockMatch ? State.COMMODITIES.find(c => c.name.toLowerCase().includes(query) || query.includes(c.name.toLowerCase().split(' ')[0])) : null;
+      const currencyMatch = !stockMatch && !commodityMatch ? State.CURRENCIES.find(c => c.name.toLowerCase().includes(query) || query.includes(c.name.toLowerCase().split(' ')[0])) : null;
 
       if(stockMatch){ stockMatch.price = num; matched++; }
       else if(commodityMatch){ commodityMatch.price = num; commodityMatch.status = 'ok'; matched++; }
+      else if(currencyMatch){ currencyMatch.price = num; currencyMatch.status = 'ok'; matched++; }
       else { unmatched.push(trimmed); }
     });
     const stampEl = document.getElementById('pasteStamp');
@@ -86,6 +94,9 @@ const ModuleActions = {
 
   async openSettings(){
     document.getElementById('settingsScreen').classList.remove('hidden');
+
+    document.getElementById('settingsTargetAktier').value = State.targetAktier;
+    document.getElementById('settingsTargetFonder').textContent = (100 - State.targetAktier) + '%';
 
     const hidden = new Set(State.hiddenModules || []);
     const listEl = document.getElementById('moduleVisibilityList');

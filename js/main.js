@@ -120,6 +120,16 @@ const App = {
         c.status = 'ok';
       }catch(e){ c.status = 'error'; }
     }
+    for(const c of State.CURRENCIES){
+      if(!c.symbol) continue;
+      try{
+        const meta = await Market.fetchQuote(c.symbol);
+        const q = Market.normalizeQuote(meta);
+        c.price = q.price;
+        c.prevClose = q.prevClose;
+        c.status = 'ok';
+      }catch(e){ c.status = 'error'; }
+    }
     for(const s of State.OMXS30_LIST){
       if(!s.symbol) continue;
       try{

@@ -10,6 +10,15 @@ const State = {
   OMX_CANDIDATES: DATA.OMX_CANDIDATES,
   OMXS30_LIST: DATA.OMXS30_LIST,
 
+  // Valutor mot SEK (bitcoin i USD, som råvarorna visas i sin egen valuta
+  // utan konvertering). Inte känsligt.
+  CURRENCIES: [
+    { name:'Dollar', symbol:'USDSEK=X', unit:'SEK' },
+    { name:'Pund', symbol:'GBPSEK=X', unit:'SEK' },
+    { name:'Euro', symbol:'EURSEK=X', unit:'SEK' },
+    { name:'Bitcoin', symbol:'BTC-USD', unit:'USD' }
+  ],
+
   ps: {},
   hideAmounts: false,
   simpleView: false,
@@ -38,14 +47,15 @@ const State = {
   // direkt under Aktier). Moduler i en grupp är inte drag/resize-bara i sig -
   // gruppen är en fast enhet.
   layout: {
-    order: ['aktier','fonder','bevakning','allokering','historik','ravaror','vinnareforlorare','utdelning','veckanstips','borsen'],
+    order: ['aktier','fonder','ravaror','bevakning','allokering','historik','vinnareforlorare','valutor','utdelning','veckanstips','borsen'],
     widths: {}, // t.ex. { aktier: 520 } - saknas nyckel = default-bredd
-    groups: [['aktier','fonder'], ['ravaror','borsen']]
+    groups: [['aktier','fonder','ravaror'], ['vinnareforlorare','valutor']]
   },
 
-  // Moduler (och 'overview', de tre cirkeldiagrammen högst upp) som är dolda
-  // via inställningar.
-  hiddenModules: [],
+  // Moduler (och 'overview', de tre fördelningsstaplarna högst upp) som är
+  // dolda via inställningar. Allokering-kortet är dolt som standard - dess
+  // mål-fält finns istället direkt i Inställningar.
+  hiddenModules: ['allokering'],
 
   assignIds(){
     this.STOCKS.forEach((s,i) => s.id = "s"+i);
@@ -54,6 +64,7 @@ const State = {
     // "undefined", så symbolredigering aldrig sparades och (nu) expandera-
     // vid-klick skulle råka expandera alla rader på en gång.
     this.COMMODITIES.forEach((c,i) => c.id = "c"+i);
+    this.CURRENCIES.forEach((c,i) => c.id = "cur"+i);
   },
 
   async load(){
@@ -63,6 +74,7 @@ const State = {
         const st = JSON.parse(r.value);
         if(st.symbols){ this.STOCKS.forEach(s => { if(st.symbols[s.id] !== undefined) s.symbol = st.symbols[s.id]; }); }
         if(st.commoditySymbols){ this.COMMODITIES.forEach(c => { if(st.commoditySymbols[c.id] !== undefined) c.symbol = st.commoditySymbols[c.id]; }); }
+        if(st.currencySymbols){ this.CURRENCIES.forEach(c => { if(st.currencySymbols[c.id] !== undefined) c.symbol = st.currencySymbols[c.id]; }); }
         this.ps = st.ps || {};
         this.hideAmounts = !!st.hideAmounts;
         this.simpleView = !!st.simpleView;
@@ -89,9 +101,10 @@ const State = {
   async save(){
     const symbols = {}; this.STOCKS.forEach(s => symbols[s.id] = s.symbol);
     const commoditySymbols = {}; this.COMMODITIES.forEach(c => commoditySymbols[c.id] = c.symbol);
+    const currencySymbols = {}; this.CURRENCIES.forEach(c => currencySymbols[c.id] = c.symbol);
     const watchlist = this.watchlist.map(w => ({ symbol:w.symbol, name:w.name, curr:w.curr }));
     const payload = JSON.stringify({
-      symbols, commoditySymbols, ps:this.ps, hideAmounts:this.hideAmounts, simpleView:this.simpleView,
+      symbols, commoditySymbols, currencySymbols, ps:this.ps, hideAmounts:this.hideAmounts, simpleView:this.simpleView,
       targetAktier:this.targetAktier, layout:this.layout, veckansTips:this.veckansTips, hiddenModules:this.hiddenModules,
       watchlist, priceAlerts:this.priceAlerts, valueHistory:this.valueHistory, fundHistory:this.fundHistory
     });
