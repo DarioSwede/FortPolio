@@ -23,20 +23,22 @@
     <div class="eyebrow">
       <span>Portfölj &middot; Avanza</span>
       <div class="overview-donuts" id="overviewDonuts"></div>
-      <div class="hide-toggle">
-        <button class="btn" style="padding:6px 10px; font-size:11px;" id="refreshBtn">↻ Uppdatera kurser</button>
-        <span class="hide-toggle-label" id="hideLabel">Visa belopp</span>
-        <div class="switch" id="switchEl"><div class="knob"></div></div>
-        <button class="btn icon-btn" onclick="ModuleActions.openSettings()" title="Inställningar">⚙</button>
+      <div class="total-row">
+        <div class="total-value" id="totalValue">— kr</div>
+        <div class="total-change" id="totalChange">—</div>
       </div>
-    </div>
-    <div class="total-row">
-      <div class="total-value" id="totalValue">— kr</div>
-      <div class="total-change" id="totalChange">—</div>
-    </div>
-    <div class="actions">
-      <span class="stamp" id="stamp">Ej uppdaterat än</span>
-      <span class="auto-refresh-status" id="autoRefreshStatus"></span>
+      <div class="header-right">
+        <div class="actions">
+          <span class="stamp" id="stamp">Ej uppdaterat än</span>
+          <span class="auto-refresh-status" id="autoRefreshStatus"></span>
+        </div>
+        <div class="hide-toggle">
+          <button class="btn" style="padding:6px 10px; font-size:11px;" id="refreshBtn">↻ Uppdatera kurser</button>
+          <span class="hide-toggle-label" id="hideLabel">Visa belopp</span>
+          <div class="switch" id="switchEl"><div class="knob"></div></div>
+          <button class="btn icon-btn" onclick="ModuleActions.openSettings()" title="Inställningar">⚙</button>
+        </div>
+      </div>
     </div>
   </header>
 

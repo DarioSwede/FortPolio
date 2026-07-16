@@ -139,7 +139,28 @@ const Layout = {
     const findPanelAt = (x, y) => {
       const el = document.elementFromPoint(x, y);
       const found = el ? el.closest('.panel') : null;
-      return found && found !== panel ? found : null;
+      if(found && found !== panel) return found;
+
+      // Masonryn packar paneler efter sin egen höjd, så det finns dödyta
+      // mellan kortare paneler i en kolumn där elementFromPoint bara
+      // träffar #columns-behållaren - utan den här reserv-sökningen kunde
+      // man aldrig släppa en panel där, vilket kändes som att dra inte
+      // fungerade alls. Hitta då närmaste panel istället så drop alltid
+      // landar någonstans så länge man är inom layout-ytan.
+      const columns = document.getElementById('columns');
+      const bounds = columns.getBoundingClientRect();
+      if(x < bounds.left || x > bounds.right || y < bounds.top || y > bounds.bottom) return null;
+
+      let closest = null, bestDist = Infinity;
+      columns.querySelectorAll(':scope > .panel').forEach(p => {
+        if(p === panel) return;
+        const r = p.getBoundingClientRect();
+        const cx = Math.min(Math.max(x, r.left), r.right);
+        const cy = Math.min(Math.max(y, r.top), r.bottom);
+        const d = Math.hypot(cx - x, cy - y);
+        if(d < bestDist){ bestDist = d; closest = p; }
+      });
+      return closest;
     };
 
     const onMove = e => {
