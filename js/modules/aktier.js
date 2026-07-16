@@ -131,27 +131,11 @@ Layout.register({
     ];
   },
 
-  donutBlock(title, entries){
-    const total = entries.reduce((s,e) => s + e.val, 0) || 1;
-    let acc = 0;
-    const stops = entries.map(e => {
-      const start = acc; acc += (e.val/total)*100;
-      return `${e.color} ${start}% ${acc}%`;
-    }).join(', ');
-
+  distBlock(title, entries){
     const block = document.createElement('div');
     const label = document.createElement('div'); label.className = 'chip-group-label'; label.style.marginTop = '0'; label.textContent = title;
-    const wrap = document.createElement('div'); wrap.className = 'alloc-wrap';
-    const donut = document.createElement('div'); donut.className = 'donut';
-    donut.style.background = `conic-gradient(${stops})`;
-    const legend = document.createElement('div'); legend.className = 'legend';
-    legend.innerHTML = entries.map(e => {
-      const pct = (e.val/total)*100;
-      return `<div class="legend-row"><span class="dot" style="background:${e.color}"></span>
-        <span class="legend-text">${e.label} <b>${pct.toFixed(0)}%</b></span></div>`;
-    }).join('');
-    wrap.appendChild(donut); wrap.appendChild(legend);
-    block.appendChild(label); block.appendChild(wrap);
+    block.appendChild(label);
+    block.insertAdjacentHTML('beforeend', Charts.percentBar(entries));
     return block;
   },
 

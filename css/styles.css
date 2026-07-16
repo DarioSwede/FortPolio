@@ -49,9 +49,16 @@ input.field:focus, textarea.field:focus{ outline:none; border-color:var(--gold);
 /* ============================================================
    LAYOUT ENGINE (draggable / resizable panels)
    ============================================================ */
-.overview-donuts{ display:flex; justify-content:center; flex-wrap:wrap; gap:40px; margin-bottom:24px; }
+.overview-donuts{ display:flex; justify-content:center; flex-wrap:wrap; gap:28px 40px; margin-bottom:14px; }
 .overview-donuts.hidden{ display:none; }
-.overview-donuts > div{ max-width:260px; }
+.overview-donuts > div{ flex:1 1 220px; max-width:340px; min-width:200px; }
+
+.percent-bar{ display:flex; width:100%; border-radius:999px; overflow:hidden; background:var(--surface-hi); }
+.percent-bar span{ display:block; height:100%; }
+.bar-legend{ display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:8px; }
+.bar-legend-item{ display:flex; align-items:center; gap:5px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--text-muted); white-space:nowrap; }
+.bar-legend-item .dot{ width:7px; height:7px; }
+.bar-legend-item b{ color:var(--text); font-weight:600; }
 .columns{ display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; }
 .panel{ position:relative; flex:1 1 var(--panel-basis, 340px); min-width:260px; }
 .panel.dragging{ opacity:.4; }

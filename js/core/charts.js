@@ -22,5 +22,24 @@ const Charts = {
     return `<svg width="${svgWidth}" height="${height}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" class="sparkline">
       <polyline points="${points}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>`;
+  },
+
+  // Bara själva stapeln (utan legend) - för anrop som vill bygga en egen
+  // legend, t.ex. med målavvikelse-indikatorer.
+  barOnly(entries, { height = 8 } = {}){
+    const total = entries.reduce((s,e) => s + e.val, 0) || 1;
+    const segs = entries.map(e => `<span style="flex:${Math.max(e.val/total, 0.001)}; background:${e.color};"></span>`).join('');
+    return `<div class="percent-bar" style="height:${height}px;">${segs}</div>`;
+  },
+
+  // Kompakt horisontell fördelningsstapel - ersätter en cirkel+legend när man
+  // bara har plats för en rad. entries: [{label, val, color}].
+  percentBar(entries, opts = {}){
+    const total = entries.reduce((s,e) => s + e.val, 0) || 1;
+    const legend = entries.map(e => {
+      const pct = (e.val/total) * 100;
+      return `<span class="bar-legend-item"><span class="dot" style="background:${e.color}"></span>${e.label} <b>${pct.toFixed(0)}%</b></span>`;
+    }).join('');
+    return `${this.barOnly(entries, opts)}<div class="bar-legend">${legend}</div>`;
   }
 };

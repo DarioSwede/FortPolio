@@ -20,8 +20,8 @@ const Overview = {
     const allokeringMod = Layout.modules.allokering;
     if(!aktierMod || !allokeringMod) return;
 
-    container.appendChild(allokeringMod.donutBlock());
-    container.appendChild(aktierMod.donutBlock('Sektor', aktierMod.sectorEntries()));
-    container.appendChild(aktierMod.donutBlock('Geografi', aktierMod.landEntries()));
+    container.appendChild(allokeringMod.distBlock());
+    container.appendChild(aktierMod.distBlock('Sektor', aktierMod.sectorEntries()));
+    container.appendChild(aktierMod.distBlock('Geografi', aktierMod.landEntries()));
   }
 };
