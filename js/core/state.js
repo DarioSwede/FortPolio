@@ -49,7 +49,7 @@ const State = {
   // behöver låsas ihop i grupper.
   layout: {
     order: ['borsen','aktier','fonder','ravaror','bevakning','allokering','historik','vinnareforlorare','valutor','utdelning','veckanstips'],
-    colSpans: { borsen:14, aktier:34, fonder:48 }, // saknas nyckel = modulens defaultColSpan
+    colSpans: { borsen:7, aktier:17, fonder:24 }, // saknas nyckel = modulens defaultColSpan
     heights: {} // t.ex. { borsen: 640 } - saknas nyckel = auto (innehållsstyrd höjd)
   },
 
@@ -82,7 +82,16 @@ const State = {
         if(st.targetAktier !== undefined) this.targetAktier = st.targetAktier;
         if(st.layout){
           this.layout = st.layout;
-          if(!this.layout.colSpans) this.layout.colSpans = (st.layout.widths ? {} : { borsen:14, aktier:34, fonder:48 });
+          if(!this.layout.colSpans) this.layout.colSpans = (st.layout.widths ? {} : { borsen:7, aktier:17, fonder:24 });
+          // Migrering: colSpans sparade mot det gamla 48-kolumners rutnätet
+          // (grid-column) är dubbelt så stora i det nya 24-kolumners masonry-
+          // schemat - skala ner en gång så bredderna inte klipps till 100%.
+          const maxSpan = Math.max(0, ...Object.values(this.layout.colSpans));
+          if(maxSpan > Layout.UNIT_COLS){
+            Object.keys(this.layout.colSpans).forEach(id => {
+              this.layout.colSpans[id] = Math.max(1, Math.round(this.layout.colSpans[id] / 2));
+            });
+          }
           if(!this.layout.heights) this.layout.heights = {};
           delete this.layout.groups; // ersatt av fri placering i rutnätet
         }
