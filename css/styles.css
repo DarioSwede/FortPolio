@@ -9,9 +9,9 @@
 *{box-sizing:border-box; margin:0; padding:0;}
 body{
   background:var(--bg); color:var(--text); font-family:'Inter',sans-serif;
-  min-height:100vh; padding:28px 14px 90px; -webkit-font-smoothing:antialiased;
+  min-height:100vh; padding:28px 8px 90px; -webkit-font-smoothing:antialiased;
 }
-.app{ max-width:1900px; margin:0 auto; }
+.app{ max-width:2600px; margin:0 auto; }
 code{ background:var(--surface-hi); padding:1px 5px; border-radius:4px; font-family:'IBM Plex Mono',monospace; font-size:.9em; }
 
 /* ============================================================
