@@ -39,6 +39,8 @@
     </div>
   </header>
 
+  <div class="overview-donuts" id="overviewDonuts"></div>
+
   <div class="columns" id="columns"></div>
 
   <div class="disclaimer">Symboler markerade med <span style="color:var(--gold)">*</span> är gissningar &mdash; kontrollera gärna. Börsöppettider är standardtider utan hänsyn till röda dagar/halvdagar. Kartans positioner är ungefärliga. Dra i modul-titeln för att flytta, dra i högerkanten för att ändra bredd.</div>
@@ -50,6 +52,10 @@
     <div class="settings-row">
       <span>Enkel vy (aktier)</span>
       <div class="switch" id="simpleViewSwitchEl"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:4px;">
+      <span>Visa moduler</span>
+      <div id="moduleVisibilityList"></div>
     </div>
     <div class="settings-row">
       <span>Byt lösenord</span>
@@ -119,6 +125,7 @@
 <script src="js/core/github.js"></script>
 <script src="js/core/network.js"></script>
 <script src="js/core/charts.js"></script>
+<script src="js/core/overview.js"></script>
 <script src="js/core/alerts.js"></script>
 <script src="js/core/crypto.js"></script>
 <script src="js/core/format.js"></script>

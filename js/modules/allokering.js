@@ -15,6 +15,27 @@ Layout.register({
   COLOR_FONDER: '#5B8DEF',
 
   build(container){
+    const targetFonder = 100 - State.targetAktier;
+    const note = document.createElement('p');
+    note.style.cssText = 'font-size:11.5px; color:var(--text-muted); line-height:1.5; margin-bottom:4px;';
+    note.textContent = 'Fördelningen mellan aktier och fonder visas som cirkeldiagram högst upp på sidan.';
+    container.appendChild(note);
+
+    const targetRow = document.createElement('div'); targetRow.className = 'target-row';
+    targetRow.style.marginTop = '0';
+    targetRow.style.paddingTop = '14px';
+    targetRow.innerHTML = `
+      <label>Mål aktier</label>
+      <input class="field" type="number" min="0" max="100" value="${State.targetAktier}" onchange="ModuleActions.setTargetAktier(this.value)">
+      <span style="color:var(--text-muted); font-size:11px;">%</span>
+      <label style="margin-left:10px;">Fonder</label>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:12px;">${targetFonder}%</span>
+    `;
+    container.appendChild(targetRow);
+  },
+
+  // Cirkeldiagrammet, för Översikt-sektionen högst upp på sidan.
+  donutBlock(){
     const stockValueSEK = State.STOCKS.filter(s => s.curr === 'SEK').reduce((sum,s) => sum + s.price*s.antal, 0);
     const fundValue = State.FUNDS.reduce((sum,f) => sum + f.varde, 0);
     const total = stockValueSEK + fundValue || 1;
@@ -24,6 +45,8 @@ Layout.register({
     const statusAktier = this.deviationColor(actualAktier, State.targetAktier);
     const statusFonder = this.deviationColor(actualFonder, targetFonder);
 
+    const block = document.createElement('div');
+    const label = document.createElement('div'); label.className = 'chip-group-label'; label.style.marginTop = '0'; label.textContent = 'Allokering';
     const wrap = document.createElement('div'); wrap.className = 'alloc-wrap';
     const donut = document.createElement('div'); donut.className = 'donut';
     donut.style.background = `conic-gradient(${this.COLOR_AKTIER} 0% ${actualAktier}%, ${this.COLOR_FONDER} ${actualAktier}% 100%)`;
@@ -37,16 +60,7 @@ Layout.register({
         <span class="dot" title="Avvikelse mot mål" style="background:${statusFonder}; margin-left:auto;"></span></div>
     `;
     wrap.appendChild(donut); wrap.appendChild(legend);
-    container.appendChild(wrap);
-
-    const targetRow = document.createElement('div'); targetRow.className = 'target-row';
-    targetRow.innerHTML = `
-      <label>Mål aktier</label>
-      <input class="field" type="number" min="0" max="100" value="${State.targetAktier}" onchange="ModuleActions.setTargetAktier(this.value)">
-      <span style="color:var(--text-muted); font-size:11px;">%</span>
-      <label style="margin-left:10px;">Fonder</label>
-      <span style="font-family:'IBM Plex Mono',monospace; font-size:12px;">${targetFonder}%</span>
-    `;
-    container.appendChild(targetRow);
+    block.appendChild(label); block.appendChild(wrap);
+    return block;
   }
 });

@@ -49,10 +49,15 @@ input.field:focus, textarea.field:focus{ outline:none; border-color:var(--gold);
 /* ============================================================
    LAYOUT ENGINE (draggable / resizable panels)
    ============================================================ */
+.overview-donuts{ display:flex; justify-content:center; flex-wrap:wrap; gap:40px; margin-bottom:24px; }
+.overview-donuts.hidden{ display:none; }
+.overview-donuts > div{ max-width:260px; }
 .columns{ display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; }
 .panel{ position:relative; flex:1 1 var(--panel-basis, 340px); min-width:260px; }
 .panel.dragging{ opacity:.4; }
 .panel.drag-over{ outline:2px dashed var(--gold); outline-offset:4px; border-radius:10px; }
+.panel-group{ display:flex; flex-direction:column; gap:18px; }
+.panel-group .card{ height:auto; }
 
 .card{ background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; height:100%; }
 .card-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; cursor:grab; user-select:none; touch-action:none; }
@@ -80,13 +85,13 @@ h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; 
 .chip-col .chip{ width:100%; text-align:left; }
 
 /* ============================================================
-   AKTIER - 3-column layout (menu / list / distribution)
+   AKTIER - 2-column layout (menu / list). Sektor/geografi-cirklarna
+   flyttade till Översikt-sektionen högst upp på sidan.
    ============================================================ */
 .aktier-container{ container-type: inline-size; }
-.aktier-layout{ display:grid; grid-template-columns:150px 1fr 220px; gap:24px; align-items:start; }
+.aktier-layout{ display:grid; grid-template-columns:150px 1fr; gap:24px; align-items:start; }
 .aktier-menu{ display:flex; flex-direction:column; gap:4px; }
-.aktier-dist{ display:flex; flex-direction:column; gap:22px; }
-@container (max-width: 760px){
+@container (max-width: 600px){
   .aktier-layout{ grid-template-columns:minmax(0,1fr); }
   .chip-col{ flex-direction:row; flex-wrap:wrap; }
   .chip-col .chip{ width:auto; }
@@ -225,6 +230,12 @@ h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; 
   .columns{ display:block; column-count:2; column-gap:10px; }
   .panel{ display:inline-block; width:100%; min-width:0; break-inside:avoid; margin-bottom:10px; }
   .resize-handle{ display:none; }
+
+  /* Grupper (t.ex. Aktier+Fonder) packas upp till fristående kort på mobil,
+     så det smala läget kan balansera dem i spalterna som vanligt istället
+     för att låsa ihop dem till ett enda jätteblock. */
+  .panel-group{ display:contents; }
+  .panel-group .card{ display:inline-block; width:100%; min-width:0; break-inside:avoid; margin-bottom:10px; }
 
   .card{ padding:11px; }
   .card-head{ margin-bottom:9px; }

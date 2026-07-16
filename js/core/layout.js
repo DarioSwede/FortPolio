@@ -16,7 +16,14 @@ const Layout = {
   renderAll(){
     const columns = document.getElementById('columns');
     columns.innerHTML = '';
+    const hidden = new Set(State.hiddenModules || []);
+    const groups = (State.layout.groups || []).map(g => g.filter(id => this.modules[id] && !hidden.has(id))).filter(g => g.length);
+    const grouped = new Set(groups.flat());
+
+    groups.forEach(ids => columns.appendChild(this.buildGroupPanel(ids)));
+
     State.layout.order.forEach(id => {
+      if(grouped.has(id) || hidden.has(id)) return;
       const mod = this.modules[id];
       if(!mod) return; // modul kan saknas om man tagit bort en fil
       columns.appendChild(this.buildPanel(mod));
@@ -51,6 +58,38 @@ const Layout = {
     panel.appendChild(handle);
 
     mod.build(body);
+    return panel;
+  },
+
+  // Ett par moduler som staplas vertikalt som en enhet (t.ex. Fonder direkt
+  // under Aktier). Ingen drag/resize för medlemmarna i sig - gruppen är en
+  // fast enhet på skrivbordet, och packas upp till fristående kort på mobil
+  // via CSS (display:contents på .panel-group).
+  buildGroupPanel(ids){
+    const panel = document.createElement('div');
+    panel.className = 'panel panel-group';
+    const width = Math.max(...ids.map(id => State.layout.widths[id] || this.modules[id].defaultWidth || 340));
+    if(width) panel.style.setProperty('--panel-basis', width + 'px');
+
+    ids.forEach(id => {
+      const mod = this.modules[id];
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.id = id;
+
+      const head = document.createElement('div');
+      head.className = 'card-head';
+      head.innerHTML = `<h2 class="section">${mod.title}</h2>`;
+
+      const body = document.createElement('div');
+      body.className = 'card-body';
+
+      card.appendChild(head);
+      card.appendChild(body);
+      panel.appendChild(card);
+      mod.build(body);
+    });
+
     return panel;
   },
 
@@ -136,8 +175,8 @@ const Layout = {
   // Anropas av en modul som bara vill rita om sig själv (t.ex. klockan i
   // Börsen-idag varje minut) utan att röra resten av sidan.
   refreshModule(id){
-    const panel = document.querySelector(`.panel[data-id="${id}"] .card-body`);
+    const body = document.querySelector(`[data-id="${id}"] .card-body`);
     const mod = this.modules[id];
-    if(panel && mod){ panel.innerHTML = ''; mod.build(panel); }
+    if(body && mod){ body.innerHTML = ''; mod.build(body); }
   }
 };

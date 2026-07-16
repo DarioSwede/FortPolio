@@ -88,12 +88,7 @@ Layout.register({
       main.appendChild(psBox);
     }
 
-    // --- Right: sector/geography distribution ---
-    const dist = document.createElement('div'); dist.className = 'aktier-dist';
-    dist.appendChild(this.donutBlock('Sektor', this.sectorEntries()));
-    dist.appendChild(this.donutBlock('Geografi', this.landEntries()));
-
-    grid.appendChild(menu); grid.appendChild(main); grid.appendChild(dist);
+    grid.appendChild(menu); grid.appendChild(main);
     wrap.appendChild(grid);
     container.appendChild(wrap);
   },

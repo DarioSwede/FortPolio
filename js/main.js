@@ -59,6 +59,7 @@ const App = {
 
   refreshAllModules(){
     Layout.renderAll();
+    Overview.render();
     this.updateHeaderTotals();
   },
 

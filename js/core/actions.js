@@ -22,6 +22,7 @@ const ModuleActions = {
     State.targetAktier = Math.max(0, Math.min(100, n));
     State.save();
     Layout.refreshModule('allokering');
+    Overview.render();
   },
 
   toggleAmounts(){
@@ -86,6 +87,19 @@ const ModuleActions = {
   async openSettings(){
     document.getElementById('settingsScreen').classList.remove('hidden');
 
+    const hidden = new Set(State.hiddenModules || []);
+    const listEl = document.getElementById('moduleVisibilityList');
+    const entries = [
+      { id:'overview', title:'Cirkeldiagram (högst upp)' },
+      ...Object.values(Layout.modules).map(mod => ({ id:mod.id, title: mod.title.replace(/<[^>]*>/g,'').trim() }))
+    ];
+    listEl.innerHTML = entries.map(e => `
+      <label class="settings-row" style="cursor:pointer; padding:8px 0;">
+        <span>${e.title}</span>
+        <input type="checkbox" ${hidden.has(e.id) ? '' : 'checked'} onchange="ModuleActions.toggleModuleVisibility('${e.id}')">
+      </label>
+    `).join('');
+
     const badge = document.getElementById('httpsIndicator');
     const https = NetworkInfo.isHttps();
     badge.textContent = https ? '🛡️ Krypterad (HTTPS)' : '⚠️ Okrypterad (HTTP)';
@@ -100,6 +114,15 @@ const ModuleActions = {
     ipEl.textContent = parts.length ? parts.join(' · ') : 'Kunde inte hämta IP just nu.';
   },
   closeSettings(){ document.getElementById('settingsScreen').classList.add('hidden'); },
+
+  toggleModuleVisibility(id){
+    const idx = State.hiddenModules.indexOf(id);
+    if(idx === -1) State.hiddenModules.push(id);
+    else State.hiddenModules.splice(idx, 1);
+    State.save();
+    Layout.renderAll();
+    Overview.render();
+  },
 
   async copyRekryptOutput(){
     const outEl = document.getElementById('rekryptOutput');

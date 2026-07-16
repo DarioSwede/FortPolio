@@ -33,11 +33,19 @@ const State = {
   valueHistory: [],   // [{t: isoDate, total: number}]
   fundHistory: {},    // fundId -> [{t: isoDate, varde: number}]
 
-  // Layout: vilken ordning modulerna visas i, och hur breda de är (flex-basis i px)
+  // Layout: vilken ordning modulerna visas i, och hur breda de är (flex-basis i px).
+  // groups: moduler som staplas vertikalt som EN enhet i layouten (t.ex. Fonder
+  // direkt under Aktier). Moduler i en grupp är inte drag/resize-bara i sig -
+  // gruppen är en fast enhet.
   layout: {
     order: ['aktier','fonder','bevakning','allokering','historik','ravaror','vinnareforlorare','utdelning','veckanstips','borsen'],
-    widths: {} // t.ex. { aktier: 520 } - saknas nyckel = default-bredd
+    widths: {}, // t.ex. { aktier: 520 } - saknas nyckel = default-bredd
+    groups: [['aktier','fonder'], ['ravaror','borsen']]
   },
+
+  // Moduler (och 'overview', de tre cirkeldiagrammen högst upp) som är dolda
+  // via inställningar.
+  hiddenModules: [],
 
   assignIds(){
     this.STOCKS.forEach((s,i) => s.id = "s"+i);
@@ -60,6 +68,8 @@ const State = {
         this.simpleView = !!st.simpleView;
         if(st.targetAktier !== undefined) this.targetAktier = st.targetAktier;
         if(st.layout) this.layout = st.layout;
+        if(!this.layout.groups) this.layout.groups = [['aktier','fonder'], ['ravaror','borsen']];
+        if(st.hiddenModules) this.hiddenModules = st.hiddenModules;
         if(st.veckansTips) this.veckansTips = st.veckansTips;
         if(st.watchlist) this.watchlist = st.watchlist.map(w => ({ ...w, price:null, prevClose:null }));
         if(st.priceAlerts) this.priceAlerts = st.priceAlerts;
@@ -82,7 +92,7 @@ const State = {
     const watchlist = this.watchlist.map(w => ({ symbol:w.symbol, name:w.name, curr:w.curr }));
     const payload = JSON.stringify({
       symbols, commoditySymbols, ps:this.ps, hideAmounts:this.hideAmounts, simpleView:this.simpleView,
-      targetAktier:this.targetAktier, layout:this.layout, veckansTips:this.veckansTips,
+      targetAktier:this.targetAktier, layout:this.layout, veckansTips:this.veckansTips, hiddenModules:this.hiddenModules,
       watchlist, priceAlerts:this.priceAlerts, valueHistory:this.valueHistory, fundHistory:this.fundHistory
     });
     await Storage.set('portfolio-state', payload);
