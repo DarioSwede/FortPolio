@@ -176,7 +176,7 @@ Layout.register({
         <span class="change ${ch.flat?'flat':(ch.pos?'pos':'neg')}">${ch.flat?'':(ch.pos?'▲ ':'▼ ')}${ch.text}</span>
       </div>
       <div class="row-sub">
-        <span class="value-amt">${Format.amount(value)}${s.curr!=='SEK' ? ' ('+s.curr+')' : ''}</span>
+        <span class="value-amt">${Format.amountIn(value, s.curr)}</span>
       </div>
       ${!simple && s.sparkline ? `<div class="row-sparkline">${Charts.sparkline(s.sparkline, { color: ch.pos ? 'var(--gain)' : 'var(--loss)' })}</div>` : ''}
     `;
@@ -203,7 +203,7 @@ Layout.register({
       </div>
       <div class="settings-row">
         <span>Marknadsvärde</span>
-        <span class="value-amt">${Format.amount(s.price*s.antal)}${s.curr!=='SEK' ? ' ('+s.curr+')' : ''}</span>
+        <span class="value-amt">${Format.amountIn(s.price*s.antal, s.curr)}</span>
       </div>
       ${State.ps[s.id] ? `<div class="settings-row"><span>P/S</span><span class="ps-tag">${State.ps[s.id]}</span></div>` : ''}
       <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:8px;">

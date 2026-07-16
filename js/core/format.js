@@ -4,6 +4,14 @@ const Format = {
 
   amount(v){ return State.hideAmounts ? "•••" : this.kr(v); },
 
+  // Som amount(), men för belopp i en annan valuta än SEK - "kr" är
+  // missvisande (och rentav motsägelsefullt) på ett belopp i t.ex. GBP.
+  amountIn(v, curr){
+    if(State.hideAmounts) return "•••";
+    if(curr === 'SEK') return this.kr(v);
+    return Math.round(v).toLocaleString('sv-SE') + " " + curr;
+  },
+
   price(v, curr){
     const dec = v < 5 ? 4 : 2;
     return v.toLocaleString('sv-SE', { minimumFractionDigits:dec, maximumFractionDigits:dec }) + " " + curr;

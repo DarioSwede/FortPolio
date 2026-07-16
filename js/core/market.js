@@ -33,6 +33,21 @@ const Market = {
     throw new Error('alla symboler misslyckades');
   },
 
+  // Yahoo rapporterar London-noterade aktier (t.ex. ENQ.L) i pence (valuta
+  // "GBp"/"GBX"), inte pund - annars ser man ett pris som är 100x för högt
+  // och en helt absurd förändring i % jämfört med en GAV inmatad i pund.
+  // Allt pris/kurs-data ska gå igenom den här innan det sparas i State.
+  normalizeQuote(meta){
+    const isPence = meta.currency === 'GBp' || meta.currency === 'GBX';
+    const divisor = isPence ? 100 : 1;
+    const prevRaw = meta.chartPreviousClose ?? meta.previousClose;
+    return {
+      price: meta.regularMarketPrice != null ? meta.regularMarketPrice / divisor : null,
+      prevClose: prevRaw != null ? prevRaw / divisor : null,
+      currency: isPence ? 'GBP' : meta.currency
+    };
+  },
+
   // Historiska stängningskurser för en liten sparkline. range/interval är
   // Yahoos egna parameternamn (samma chart-endpoint som fetchQuote).
   async fetchHistory(symbol, range = '1mo', interval = '1d'){
@@ -51,7 +66,9 @@ const Market = {
         const result = data?.chart?.result?.[0];
         const closes = result?.indicators?.quote?.[0]?.close;
         if(!closes || !closes.length) throw new Error('ingen historik i svar');
-        return closes.filter(v => v != null);
+        const isPence = result.meta?.currency === 'GBp' || result.meta?.currency === 'GBX';
+        const divisor = isPence ? 100 : 1;
+        return closes.filter(v => v != null).map(v => v / divisor);
       }catch(e){ lastErr = e; }
     }
     throw lastErr || new Error('alla försök misslyckades');

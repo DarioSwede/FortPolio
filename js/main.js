@@ -88,8 +88,12 @@ const App = {
 
     for(const s of State.STOCKS){
       if(!s.symbol) continue;
-      try{ const meta = await Market.fetchQuote(s.symbol); s.price = meta.regularMarketPrice; okCount++; }
-      catch(e){ failCount++; }
+      try{
+        const meta = await Market.fetchQuote(s.symbol);
+        const q = Market.normalizeQuote(meta);
+        s.price = q.price;
+        okCount++;
+      }catch(e){ failCount++; }
       try{ s.sparkline = await Market.fetchHistory(s.symbol); }
       catch(e){ /* ingen graf just nu - inte kritiskt */ }
     }
@@ -97,9 +101,10 @@ const App = {
       if(!w.symbol) continue;
       try{
         const meta = await Market.fetchQuote(w.symbol);
-        w.price = meta.regularMarketPrice;
-        w.prevClose = meta.chartPreviousClose ?? meta.previousClose;
-        w.curr = meta.currency || w.curr;
+        const q = Market.normalizeQuote(meta);
+        w.price = q.price;
+        w.prevClose = q.prevClose;
+        w.curr = q.currency || w.curr;
       }catch(e){ /* lämna senaste kända pris orört */ }
       try{ w.sparkline = await Market.fetchHistory(w.symbol); }
       catch(e){ /* ingen graf just nu */ }
@@ -108,8 +113,9 @@ const App = {
       if(!c.symbol) continue;
       try{
         const meta = await Market.fetchQuote(c.symbol);
-        c.price = meta.regularMarketPrice;
-        c.prevClose = meta.chartPreviousClose ?? meta.previousClose;
+        const q = Market.normalizeQuote(meta);
+        c.price = q.price;
+        c.prevClose = q.prevClose;
         c.status = 'ok';
       }catch(e){ c.status = 'error'; }
     }
