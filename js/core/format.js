@@ -17,5 +17,13 @@ const Format = {
 
   pctShort(pct){
     return (pct >= 0 ? "+" : "") + pct.toFixed(2).replace('.', ',') + "%";
+  },
+
+  // ISO 3166-1 alpha-2 landskod -> flagg-emoji, via Unicode regional indicators.
+  // Fungerar för alla giltiga tvåbokstavskoder utan en hårdkodad tabell.
+  flag(land){
+    if(!land || land.length !== 2) return '🏳️';
+    const points = [...land.toUpperCase()].map(c => 0x1F1E6 + (c.charCodeAt(0) - 65));
+    return String.fromCodePoint(...points);
   }
 };

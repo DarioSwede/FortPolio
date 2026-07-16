@@ -154,6 +154,12 @@ const ModuleActions = {
     State.save();
   },
 
+  openStockDetail(id){
+    const s = State.STOCKS.find(x => x.id === id);
+    if(s) Layout.modules.aktier.openDetail(s);
+  },
+  closeStockDetail(){ document.getElementById('stockDetailScreen').classList.add('hidden'); },
+
   async enableNotifications(){
     const ok = await Alerts.ensurePermission();
     const statusEl = document.getElementById('notifStatus');

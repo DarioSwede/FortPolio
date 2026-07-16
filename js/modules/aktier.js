@@ -162,44 +162,69 @@ Layout.register({
 
   row(s, simple){
     const row = document.createElement('div');
-    row.className = 'row'; row.dataset.id = s.id;
+    row.className = 'row row-clickable'; row.dataset.id = s.id;
+    row.onclick = () => this.openDetail(s);
     const value = s.price * s.antal;
     const ch = Format.pct(s.price, s.gav);
     const triggered = Alerts.check(s.id, s.name, s.price);
-    const alert = State.priceAlerts[s.id];
-    const meta = simple ? '' : `
-      <div class="meta">
-        <span>Symbol${s.guess?'<span class="guess">*</span>':''}:</span>
-        <input class="field" type="text" value="${s.symbol}" placeholder="ex. ATCO-A.ST" onchange="ModuleActions.setStockSymbol('${s.id}', this.value)">
-        <span>Kurs:</span>
-        <input class="field" type="text" value="${s.price}" onchange="ModuleActions.setStockPrice('${s.id}', this.value)">
-      </div>
-      <div class="meta">
-        <span>Alarm över:</span>
-        <input class="field" type="text" placeholder="pris" value="${alert && alert.above != null ? alert.above : ''}" onchange="ModuleActions.setStockAlert('${s.id}', 'above', this.value)">
-        <span>under:</span>
-        <input class="field" type="text" placeholder="pris" value="${alert && alert.below != null ? alert.below : ''}" onchange="ModuleActions.setStockAlert('${s.id}', 'below', this.value)">
-      </div>
-    `;
+    const category = s.tags[0] || '';
     row.innerHTML = `
+      ${category ? `<div class="row-category">${category}</div>` : ''}
+      <div class="row-name" title="${s.name}">${Format.flag(s.land)} ${triggered ? '🔔 ' : ''}${s.name}</div>
       <div class="row-top">
-        <span class="ticker" title="${s.name}">${triggered ? '🔔 ' : ''}${s.name}</span>
         <span class="price">${Format.price(s.price, s.curr)}</span>
-      </div>
-      <div class="row-sub">
-        <div class="name-line">
-          <span class="badge land">${s.land}</span>
-          ${s.tags.map(t => `<span class="badge">${t}</span>`).join('')}
-        </div>
         <span class="change ${ch.flat?'flat':(ch.pos?'pos':'neg')}">${ch.flat?'':(ch.pos?'▲ ':'▼ ')}${ch.text}</span>
       </div>
-      ${!simple && s.sparkline ? `<div class="row-sparkline">${Charts.sparkline(s.sparkline, { color: ch.pos ? 'var(--gain)' : 'var(--loss)' })}</div>` : ''}
-      <div class="row-bottom">
-        <span class="name">${s.antal} st &middot; GAV ${s.gav.toLocaleString('sv-SE',{minimumFractionDigits:2})} ${s.curr}${State.ps[s.id] ? ` &middot; <span class="ps-tag">P/S ${State.ps[s.id]}</span>` : ''}</span>
+      <div class="row-sub">
         <span class="value-amt">${Format.amount(value)}${s.curr!=='SEK' ? ' ('+s.curr+')' : ''}</span>
       </div>
-      ${meta}
+      ${!simple && s.sparkline ? `<div class="row-sparkline">${Charts.sparkline(s.sparkline, { color: ch.pos ? 'var(--gain)' : 'var(--loss)' })}</div>` : ''}
     `;
     return row;
+  },
+
+  openDetail(s){
+    const ch = Format.pct(s.price, s.gav);
+    const alert = State.priceAlerts[s.id];
+    const box = document.getElementById('stockDetailBox');
+    box.innerHTML = `
+      <h3>${Format.flag(s.land)} ${s.name}</h3>
+      <div class="name-line" style="margin:8px 0 14px;">
+        ${s.tags.map(t => `<span class="badge">${t}</span>`).join('')}
+      </div>
+      ${s.sparkline ? `<div class="big-sparkline" style="margin-bottom:14px;">${Charts.sparkline(s.sparkline, { responsive:true, width:300, height:70, strokeWidth:2, color: ch.pos ? 'var(--gain)' : 'var(--loss)' })}</div>` : ''}
+      <div class="settings-row">
+        <span>Kurs</span>
+        <span>${Format.price(s.price, s.curr)} <span class="change ${ch.flat?'flat':(ch.pos?'pos':'neg')}" style="margin-left:6px;">${ch.flat?'':(ch.pos?'▲ ':'▼ ')}${ch.text}</span></span>
+      </div>
+      <div class="settings-row">
+        <span>Innehav</span>
+        <span>${s.antal} st &middot; GAV ${s.gav.toLocaleString('sv-SE',{minimumFractionDigits:2})} ${s.curr}</span>
+      </div>
+      <div class="settings-row">
+        <span>Marknadsvärde</span>
+        <span class="value-amt">${Format.amount(s.price*s.antal)}${s.curr!=='SEK' ? ' ('+s.curr+')' : ''}</span>
+      </div>
+      ${State.ps[s.id] ? `<div class="settings-row"><span>P/S</span><span class="ps-tag">${State.ps[s.id]}</span></div>` : ''}
+      <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+        <span>Symbol${s.guess ? ' <span class="guess">*</span>' : ''}</span>
+        <input class="field" type="text" value="${s.symbol}" placeholder="ex. ATCO-A.ST" onchange="ModuleActions.setStockSymbol('${s.id}', this.value)">
+      </div>
+      <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+        <span>Manuell kurs</span>
+        <input class="field" type="text" value="${s.price}" onchange="ModuleActions.setStockPrice('${s.id}', this.value)">
+      </div>
+      <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+        <span>Prisalarm</span>
+        <div class="row-inputs">
+          <input class="field" type="text" placeholder="över" value="${alert && alert.above != null ? alert.above : ''}" onchange="ModuleActions.setStockAlert('${s.id}', 'above', this.value)">
+          <input class="field" type="text" placeholder="under" value="${alert && alert.below != null ? alert.below : ''}" onchange="ModuleActions.setStockAlert('${s.id}', 'below', this.value)">
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; margin-top:14px;">
+        <button class="btn btn-gold" onclick="ModuleActions.closeStockDetail()">Stäng</button>
+      </div>
+    `;
+    document.getElementById('stockDetailScreen').classList.remove('hidden');
   }
 });
