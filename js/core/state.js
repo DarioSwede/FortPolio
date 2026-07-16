@@ -23,6 +23,8 @@ const State = {
   hideAmounts: false,
   simpleView: false,
   activeFilter: { kind:'all', value:null },
+  // Sorteringsriktning för procentuell vinst/förlust i Aktier/Fonder-listorna.
+  sortDir: { aktier:'desc', fonder:'desc' },
   targetAktier: 35,
   omxData: { value:null, changePct:null, status:'idle', symbolUsed:null },
   veckansTips: [],
@@ -80,6 +82,7 @@ const State = {
         this.hideAmounts = !!st.hideAmounts;
         this.simpleView = !!st.simpleView;
         if(st.targetAktier !== undefined) this.targetAktier = st.targetAktier;
+        if(st.sortDir) this.sortDir = st.sortDir;
         if(st.layout){
           this.layout = st.layout;
           if(!this.layout.colSpans) this.layout.colSpans = (st.layout.widths ? {} : { borsen:7, aktier:17, fonder:24 });
@@ -119,7 +122,7 @@ const State = {
     const watchlist = this.watchlist.map(w => ({ symbol:w.symbol, name:w.name, curr:w.curr }));
     const payload = JSON.stringify({
       symbols, commoditySymbols, currencySymbols, ps:this.ps, hideAmounts:this.hideAmounts, simpleView:this.simpleView,
-      targetAktier:this.targetAktier, layout:this.layout, veckansTips:this.veckansTips, hiddenModules:this.hiddenModules,
+      targetAktier:this.targetAktier, sortDir:this.sortDir, layout:this.layout, veckansTips:this.veckansTips, hiddenModules:this.hiddenModules,
       watchlist, priceAlerts:this.priceAlerts, valueHistory:this.valueHistory, fundHistory:this.fundHistory
     });
     await Storage.set('portfolio-state', payload);

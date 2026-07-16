@@ -87,6 +87,32 @@ const App = {
     btn.disabled = true; btn.textContent = '↻ Uppdaterar …';
     let okCount = 0, failCount = 0;
 
+    // Råvaror och valutor hämtas allra först - de är en liten fast grupp
+    // (10 anrop totalt) men hamnade tidigare sist i en lång sekventiell kö
+    // av 50+ anrop (aktier + historik + OMXS30-listan), så om en gratis
+    // CORS-proxy började strypa/rate-limita hann de aldrig uppdateras trots
+    // att aktierna längre fram redan hade lyckats.
+    for(const c of State.COMMODITIES){
+      if(!c.symbol) continue;
+      try{
+        const meta = await Market.fetchQuote(c.symbol);
+        const q = Market.normalizeQuote(meta);
+        c.price = q.price;
+        c.prevClose = q.prevClose;
+        c.status = 'ok';
+      }catch(e){ c.status = 'error'; }
+    }
+    for(const c of State.CURRENCIES){
+      if(!c.symbol) continue;
+      try{
+        const meta = await Market.fetchQuote(c.symbol);
+        const q = Market.normalizeQuote(meta);
+        c.price = q.price;
+        c.prevClose = q.prevClose;
+        c.status = 'ok';
+      }catch(e){ c.status = 'error'; }
+    }
+
     for(const s of State.STOCKS){
       if(!s.symbol) continue;
       try{
@@ -109,26 +135,6 @@ const App = {
       }catch(e){ /* lämna senaste kända pris orört */ }
       try{ w.sparkline = await Market.fetchHistory(w.symbol); }
       catch(e){ /* ingen graf just nu */ }
-    }
-    for(const c of State.COMMODITIES){
-      if(!c.symbol) continue;
-      try{
-        const meta = await Market.fetchQuote(c.symbol);
-        const q = Market.normalizeQuote(meta);
-        c.price = q.price;
-        c.prevClose = q.prevClose;
-        c.status = 'ok';
-      }catch(e){ c.status = 'error'; }
-    }
-    for(const c of State.CURRENCIES){
-      if(!c.symbol) continue;
-      try{
-        const meta = await Market.fetchQuote(c.symbol);
-        const q = Market.normalizeQuote(meta);
-        c.price = q.price;
-        c.prevClose = q.prevClose;
-        c.status = 'ok';
-      }catch(e){ c.status = 'error'; }
     }
     for(const s of State.OMXS30_LIST){
       if(!s.symbol) continue;

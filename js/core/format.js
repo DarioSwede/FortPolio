@@ -33,5 +33,11 @@ const Format = {
     if(!land || land.length !== 2) return '🏳️';
     const points = [...land.toUpperCase()].map(c => 0x1F1E6 + (c.charCodeAt(0) - 65));
     return String.fromCodePoint(...points);
-  }
+  },
+
+  // Valutasymbol för de valutakoder som faktiskt förekommer i appen (råvaror
+  // handlas i USD, valutakortet visar kurser i SEK/USD) - faller tillbaka på
+  // koden själv för allt annat så det aldrig blir tomt.
+  CURRENCY_SYMBOLS: { SEK:'kr', USD:'$', EUR:'€', GBP:'£', CAD:'$', BTC:'₿' },
+  currencySymbol(code){ return this.CURRENCY_SYMBOLS[code] || code || ''; }
 };

@@ -23,10 +23,15 @@ Layout.register({
     const hasPrice = c.price != null;
     const ch = hasPrice && c.prevClose ? Format.pct(c.price, c.prevClose) : null;
     const isOpen = this.expanded.has(c.id);
+    // unit är valutan kursen anges i (t.ex. "SEK" för Dollar/Pund/Euro,
+    // "USD" för Bitcoin) - visa den som en egen badge så det alltid syns
+    // vilken valuta man faktiskt läser av.
+    const symbol = Format.currencySymbol(c.unit);
     row.innerHTML = `
+      <div class="row-category">${c.unit}</div>
       <div class="row-top">
         <span class="ticker">${c.name}</span>
-        <span class="price">${hasPrice ? c.price.toLocaleString('sv-SE',{maximumFractionDigits:2}) : '—'}<span class="unit-suffix"> ${c.unit}</span></span>
+        <span class="price">${hasPrice ? symbol + ' ' + c.price.toLocaleString('sv-SE',{maximumFractionDigits:2}) : '—'}</span>
       </div>
       <span class="change ${ch ? (ch.pos?'pos':'neg') : 'flat'}">${ch ? (ch.pos?'▲ ':'▼ ')+ch.text : (c.status==='error' ? 'Ej tillgänglig' : '—')}</span>
       ${isOpen ? `

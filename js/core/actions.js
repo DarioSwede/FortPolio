@@ -20,6 +20,12 @@ const ModuleActions = {
     const c = State.CURRENCIES.find(x => x.id === id); if(!c) return;
     c.symbol = val.trim(); State.save();
   },
+  toggleSortDir(moduleId){
+    State.sortDir[moduleId] = State.sortDir[moduleId] === 'desc' ? 'asc' : 'desc';
+    State.save();
+    Layout.refreshModule(moduleId);
+  },
+
   setTargetAktier(val){
     let n = parseFloat(val);
     if(isNaN(n)) n = 35;

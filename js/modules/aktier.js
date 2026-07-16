@@ -12,7 +12,14 @@ Layout.register({
     const ALL_SECTORS = [...new Set(State.STOCKS.flatMap(s => s.tags))];
 
     // --- Filter, som en horisontell rad högst upp ---
+    const menuRow = document.createElement('div'); menuRow.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;';
     const menuLabel = document.createElement('div'); menuLabel.className = 'chip-group-label'; menuLabel.style.marginTop = '0'; menuLabel.textContent = 'Resultat & geografi';
+    const sortDir = State.sortDir.aktier;
+    const sortBtn = document.createElement('button'); sortBtn.className = 'chip';
+    sortBtn.textContent = `Vinst/förlust ${sortDir === 'desc' ? '▼' : '▲'}`;
+    sortBtn.title = 'Byt sorteringsriktning';
+    sortBtn.onclick = () => ModuleActions.toggleSortDir('aktier');
+    menuRow.appendChild(menuLabel); menuRow.appendChild(sortBtn);
     const menuChips = document.createElement('div'); menuChips.className = 'chip-row';
     [{k:'all',label:'Alla'},{k:'winners',label:'Vinnare'},{k:'losers',label:'Förlorare'},{k:'swedish',label:'Svenska'},{k:'foreign',label:'Utländska'}]
     .forEach(b => {
@@ -22,7 +29,7 @@ Layout.register({
       c.onclick = () => { State.activeFilter = { kind:b.k, value:null }; Layout.refreshModule('aktier'); };
       menuChips.appendChild(c);
     });
-    container.appendChild(menuLabel); container.appendChild(menuChips);
+    container.appendChild(menuRow); container.appendChild(menuChips);
 
     if(!simple){
       const sectorLabel = document.createElement('div'); sectorLabel.className = 'chip-group-label'; sectorLabel.textContent = 'Sektor';
@@ -52,7 +59,10 @@ Layout.register({
     };
 
     const filtered = State.STOCKS.filter(matches).slice()
-      .sort((a,b) => Format.pct(b.price,b.gav).raw - Format.pct(a.price,a.gav).raw);
+      .sort((a,b) => {
+        const diff = Format.pct(b.price,b.gav).raw - Format.pct(a.price,a.gav).raw; // desc = bäst först
+        return State.sortDir.aktier === 'asc' ? -diff : diff;
+      });
 
     const list = document.createElement('div'); list.className = 'grid-list';
     if(filtered.length === 0){
