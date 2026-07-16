@@ -42,14 +42,15 @@ const State = {
   valueHistory: [],   // [{t: isoDate, total: number}]
   fundHistory: {},    // fundId -> [{t: isoDate, varde: number}]
 
-  // Layout: vilken ordning modulerna visas i, och hur breda de är (flex-basis i px).
-  // groups: moduler som staplas vertikalt som EN enhet i layouten (t.ex. Fonder
-  // direkt under Aktier). Moduler i en grupp är inte drag/resize-bara i sig -
-  // gruppen är en fast enhet.
+  // Layout: ett rutnät på 48 kolumner. Varje modul har en colSpan (bredd,
+  // 1-48) och kan valfritt ha en fast height i px (annars auto efter
+  // innehåll). order styr både dra-och-släpp-ordningen och var modulen
+  // hamnar i rutnätets "dense"-packning - fri placering utan att moduler
+  // behöver låsas ihop i grupper.
   layout: {
-    order: ['aktier','fonder','ravaror','bevakning','allokering','historik','vinnareforlorare','valutor','utdelning','veckanstips','borsen'],
-    widths: {}, // t.ex. { aktier: 520 } - saknas nyckel = default-bredd
-    groups: [['aktier','fonder','ravaror'], ['vinnareforlorare','valutor']]
+    order: ['borsen','aktier','fonder','ravaror','bevakning','allokering','historik','vinnareforlorare','valutor','utdelning','veckanstips'],
+    colSpans: { borsen:14, aktier:34, fonder:48 }, // saknas nyckel = modulens defaultColSpan
+    heights: {} // t.ex. { borsen: 640 } - saknas nyckel = auto (innehållsstyrd höjd)
   },
 
   // Moduler (och 'overview', de tre fördelningsstaplarna högst upp) som är
@@ -79,8 +80,12 @@ const State = {
         this.hideAmounts = !!st.hideAmounts;
         this.simpleView = !!st.simpleView;
         if(st.targetAktier !== undefined) this.targetAktier = st.targetAktier;
-        if(st.layout) this.layout = st.layout;
-        if(!this.layout.groups) this.layout.groups = [['aktier','fonder'], ['ravaror','borsen']];
+        if(st.layout){
+          this.layout = st.layout;
+          if(!this.layout.colSpans) this.layout.colSpans = (st.layout.widths ? {} : { borsen:14, aktier:34, fonder:48 });
+          if(!this.layout.heights) this.layout.heights = {};
+          delete this.layout.groups; // ersatt av fri placering i rutnätet
+        }
         if(st.hiddenModules) this.hiddenModules = st.hiddenModules;
         if(st.veckansTips) this.veckansTips = st.veckansTips;
         if(st.watchlist) this.watchlist = st.watchlist.map(w => ({ ...w, price:null, prevClose:null }));

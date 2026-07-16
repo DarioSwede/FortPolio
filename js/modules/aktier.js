@@ -11,13 +11,9 @@ Layout.register({
     const simple = State.simpleView;
     const ALL_SECTORS = [...new Set(State.STOCKS.flatMap(s => s.tags))];
 
-    const wrap = document.createElement('div'); wrap.className = 'aktier-container';
-    const grid = document.createElement('div'); grid.className = 'aktier-layout';
-
-    // --- Left: filter menu ---
-    const menu = document.createElement('div'); menu.className = 'aktier-menu';
+    // --- Filter, som en horisontell rad högst upp ---
     const menuLabel = document.createElement('div'); menuLabel.className = 'chip-group-label'; menuLabel.style.marginTop = '0'; menuLabel.textContent = 'Resultat & geografi';
-    const menuChips = document.createElement('div'); menuChips.className = 'chip-col';
+    const menuChips = document.createElement('div'); menuChips.className = 'chip-row';
     [{k:'all',label:'Alla'},{k:'winners',label:'Vinnare'},{k:'losers',label:'Förlorare'},{k:'swedish',label:'Svenska'},{k:'foreign',label:'Utländska'}]
     .forEach(b => {
       const c = document.createElement('button');
@@ -26,11 +22,11 @@ Layout.register({
       c.onclick = () => { State.activeFilter = { kind:b.k, value:null }; Layout.refreshModule('aktier'); };
       menuChips.appendChild(c);
     });
-    menu.appendChild(menuLabel); menu.appendChild(menuChips);
+    container.appendChild(menuLabel); container.appendChild(menuChips);
 
     if(!simple){
       const sectorLabel = document.createElement('div'); sectorLabel.className = 'chip-group-label'; sectorLabel.textContent = 'Sektor';
-      const sectorChips = document.createElement('div'); sectorChips.className = 'chip-col';
+      const sectorChips = document.createElement('div'); sectorChips.className = 'chip-row';
       ALL_SECTORS.forEach(sec => {
         const c = document.createElement('button');
         c.className = 'chip' + (State.activeFilter.kind === 'sector' && State.activeFilter.value === sec ? ' active' : '');
@@ -38,10 +34,10 @@ Layout.register({
         c.onclick = () => { State.activeFilter = { kind:'sector', value:sec }; Layout.refreshModule('aktier'); };
         sectorChips.appendChild(c);
       });
-      menu.appendChild(sectorLabel); menu.appendChild(sectorChips);
+      container.appendChild(sectorLabel); container.appendChild(sectorChips);
     }
 
-    // --- Middle: stock list ---
+    // --- Aktielista ---
     const main = document.createElement('div'); main.className = 'aktier-main';
     const matches = s => {
       const ch = Format.pct(s.price, s.gav);
@@ -88,9 +84,7 @@ Layout.register({
       main.appendChild(psBox);
     }
 
-    grid.appendChild(menu); grid.appendChild(main);
-    wrap.appendChild(grid);
-    container.appendChild(wrap);
+    container.appendChild(main);
   },
 
   MIN_SLICE_SHARE: 0.04,

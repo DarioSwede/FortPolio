@@ -17,7 +17,8 @@ code{ background:var(--surface-hi); padding:1px 5px; border-radius:4px; font-fam
 /* ============================================================
    HEADER
    ============================================================ */
-.eyebrow{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.18em; color:var(--text-muted); text-transform:uppercase; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;}
+.eyebrow{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.18em; color:var(--text-muted); text-transform:uppercase; margin-bottom:10px; display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:16px;}
+.eyebrow > span{ white-space:nowrap; }
 header{ margin-bottom:22px; }
 .total-row{ display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px; }
 .total-value{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(32px,6vw,44px); letter-spacing:-.01em; line-height:1;}
@@ -49,7 +50,7 @@ input.field:focus, textarea.field:focus{ outline:none; border-color:var(--gold);
 /* ============================================================
    LAYOUT ENGINE (draggable / resizable panels)
    ============================================================ */
-.overview-donuts{ display:flex; flex-wrap:wrap; gap:10px 24px; }
+.overview-donuts{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px 24px; }
 .overview-donuts.hidden{ display:none; }
 .overview-donuts > div{ min-width:120px; max-width:190px; }
 .overview-donuts .chip-group-label{ font-size:9px; margin-bottom:3px; }
@@ -63,12 +64,10 @@ input.field:focus, textarea.field:focus{ outline:none; border-color:var(--gold);
 .bar-legend-item{ display:flex; align-items:center; gap:5px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--text-muted); white-space:nowrap; }
 .bar-legend-item .dot{ width:7px; height:7px; }
 .bar-legend-item b{ color:var(--text); font-weight:600; }
-.columns{ display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start; }
-.panel{ position:relative; flex:1 1 var(--panel-basis, 340px); min-width:260px; }
+.columns{ display:grid; grid-template-columns:repeat(48, 1fr); grid-auto-flow:dense; gap:18px; align-items:start; }
+.panel{ position:relative; min-width:0; }
 .panel.dragging{ opacity:.4; }
 .panel.drag-over{ outline:2px dashed var(--gold); outline-offset:4px; border-radius:10px; }
-.panel-group{ display:flex; flex-direction:column; gap:18px; }
-.panel-group .card{ height:auto; }
 
 .card{ background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; height:100%; }
 .card-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; cursor:grab; user-select:none; touch-action:none; }
@@ -83,6 +82,13 @@ h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; 
 .resize-handle::after{ content:''; width:3px; height:36px; background:var(--border); border-radius:3px; transition:background .15s; }
 .resize-handle:hover::after{ background:var(--gold); }
 
+.resize-handle-v{
+  position:absolute; left:0; bottom:-9px; width:100%; height:18px; cursor:ns-resize;
+  display:flex; align-items:center; justify-content:center; z-index:5;
+}
+.resize-handle-v::after{ content:''; height:3px; width:36px; background:var(--border); border-radius:3px; transition:background .15s; }
+.resize-handle-v:hover::after{ background:var(--gold); }
+
 /* ============================================================
    FILTER CHIPS
    ============================================================ */
@@ -91,22 +97,6 @@ h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; 
 .chip{ font-family:'IBM Plex Mono',monospace; font-size:11px; background:var(--bg); border:1px solid var(--border); color:var(--text-muted); padding:5px 11px; border-radius:999px; cursor:pointer; white-space:nowrap; transition:border-color .15s,color .15s,background .15s;}
 .chip:hover{ color:var(--text); }
 .chip.active{ border-color:var(--gold); color:var(--gold); background:rgba(214,167,86,.10); }
-
-.chip-col{ display:flex; flex-direction:column; gap:6px; }
-.chip-col .chip{ width:100%; text-align:left; }
-
-/* ============================================================
-   AKTIER - 2-column layout (menu / list). Sektor/geografi-cirklarna
-   flyttade till Översikt-sektionen högst upp på sidan.
-   ============================================================ */
-.aktier-container{ container-type: inline-size; }
-.aktier-layout{ display:grid; grid-template-columns:150px 1fr; gap:24px; align-items:start; }
-.aktier-menu{ display:flex; flex-direction:column; gap:4px; }
-@container (max-width: 600px){
-  .aktier-layout{ grid-template-columns:minmax(0,1fr); }
-  .chip-col{ flex-direction:row; flex-wrap:wrap; }
-  .chip-col .chip{ width:auto; }
-}
 
 /* ============================================================
    ROW / GRID-LIST (holdings, commodities, movers...)
@@ -233,14 +223,16 @@ h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; 
 @media (max-width: 700px){
   body{ padding:16px 8px 60px; }
   header{ text-align:center; margin-bottom:16px; }
-  .eyebrow{ justify-content:center; }
+  .eyebrow{ display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .overview-donuts{ display:none; }
   .hide-toggle{ margin-left:0; justify-content:center; }
   .total-row{ justify-content:center; }
   .actions{ justify-content:center; }
 
   .columns{ display:block; column-count:2; column-gap:10px; }
   .panel{ display:inline-block; width:100%; min-width:0; break-inside:avoid; margin-bottom:10px; }
-  .resize-handle{ display:none; }
+  .card{ height:auto !important; overflow:visible !important; }
+  .resize-handle, .resize-handle-v{ display:none; }
 
   /* Grupper (t.ex. Aktier+Fonder) packas upp till fristående kort på mobil,
      så det smala läget kan balansera dem i spalterna som vanligt istället
