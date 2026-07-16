@@ -6,13 +6,13 @@
 */
 Layout.register({
   id: 'veckanstips',
-  title: 'Veckans tips',
+  title: 'Dagens tips',
 
   build(container){
     const saved = State.veckansTips || [];
     if(saved.length === 0){
       const empty = document.createElement('div'); empty.className = 'empty-note';
-      empty.textContent = 'Inga tips inlagda än - klistra in nedan.';
+      empty.textContent = 'Inga tips inlagda idag - klistra in nedan.';
       container.appendChild(empty);
     } else {
       const list = document.createElement('div'); list.className = 'grid-list';
@@ -30,8 +30,8 @@ Layout.register({
 
     const box = document.createElement('div'); box.className = 'text-box';
     box.innerHTML = `
-      <h3>Klistra in veckans tips</h3>
-      <p>Kopiera texten från Dagens PS (eller annan källa) hit, en rad per bolag: <code>Bolag - kommentar</code>.</p>
+      <h3>Klistra in dagens tips</h3>
+      <p>Kopiera texten från Signallistan (eller annan källa) hit, en rad per bolag: <code>Bolag - kommentar</code>. Ersätter gårdagens tips.</p>
       <textarea id="tipsInput" class="field" placeholder="t.ex. Atlas Copco A - stark orderingång enligt Di"></textarea>
       <div class="actions-row"><button class="btn btn-gold" onclick="ModuleActions.parseTips()">Spara tips</button></div>
     `;
@@ -48,7 +48,8 @@ Object.assign(ModuleActions, {
       const [bolag, ...rest] = line.split(' - ');
       return { bolag: bolag.trim(), kommentar: rest.join(' - ').trim(), datum: today };
     });
-    State.veckansTips = [...newTips, ...(State.veckansTips || [])].slice(0, 20);
+    // Dagens tips ersätter gårdagens - det är ett dagligt utdrag, inte en logg.
+    State.veckansTips = newTips.slice(0, 30);
     State.save();
     Layout.refreshModule('veckanstips');
   }
