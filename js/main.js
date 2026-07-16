@@ -7,7 +7,14 @@ const App = {
     await State.load();
     this.wireHeader();
     this.refreshAllModules();
+    State.recordSnapshot(this.currentTotal());
     setInterval(() => Layout.refreshModule('borsen'), 60000);
+  },
+
+  currentTotal(){
+    const stockValueSEK = State.STOCKS.filter(s => s.curr === 'SEK').reduce((sum,s) => sum + s.price*s.antal, 0);
+    const fundValue = State.FUNDS.reduce((sum,f) => sum + f.varde, 0);
+    return stockValueSEK + fundValue;
   },
 
   wireHeader(){
@@ -22,11 +29,9 @@ const App = {
   },
 
   updateHeaderTotals(){
-    const stockValueSEK = State.STOCKS.filter(s => s.curr === 'SEK').reduce((sum,s) => sum + s.price*s.antal, 0);
     const stockCostSEK = State.STOCKS.filter(s => s.curr === 'SEK' && s.gav > 0).reduce((sum,s) => sum + s.gav*s.antal, 0);
-    const fundValue = State.FUNDS.reduce((sum,f) => sum + f.varde, 0);
     const fundCost = State.FUNDS.reduce((sum,f) => sum + f.kostnad, 0);
-    const total = stockValueSEK + fundValue;
+    const total = this.currentTotal();
     const cost = stockCostSEK + fundCost;
 
     document.getElementById('totalValue').textContent = Format.amount(total) + (State.hideAmounts ? '' : ' *');
@@ -51,6 +56,19 @@ const App = {
       if(!s.symbol) continue;
       try{ const meta = await Market.fetchQuote(s.symbol); s.price = meta.regularMarketPrice; okCount++; }
       catch(e){ failCount++; }
+      try{ s.sparkline = await Market.fetchHistory(s.symbol); }
+      catch(e){ /* ingen graf just nu - inte kritiskt */ }
+    }
+    for(const w of State.watchlist){
+      if(!w.symbol) continue;
+      try{
+        const meta = await Market.fetchQuote(w.symbol);
+        w.price = meta.regularMarketPrice;
+        w.prevClose = meta.chartPreviousClose ?? meta.previousClose;
+        w.curr = meta.currency || w.curr;
+      }catch(e){ /* lämna senaste kända pris orört */ }
+      try{ w.sparkline = await Market.fetchHistory(w.symbol); }
+      catch(e){ /* ingen graf just nu */ }
     }
     for(const c of State.COMMODITIES){
       if(!c.symbol) continue;
@@ -79,6 +97,7 @@ const App = {
     }catch(e){ State.omxData.status = 'error'; }
 
     this.refreshAllModules();
+    State.recordSnapshot(this.currentTotal());
     document.getElementById('stamp').textContent =
       `Senast uppdaterat: ${new Date().toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'})} (${okCount} ok, ${failCount} misslyckades)`;
     btn.disabled = false; btn.textContent = '↻ Uppdatera kurser';

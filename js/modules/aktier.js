@@ -165,6 +165,8 @@ Layout.register({
     row.className = 'row'; row.dataset.id = s.id;
     const value = s.price * s.antal;
     const ch = Format.pct(s.price, s.gav);
+    const triggered = Alerts.check(s.id, s.name, s.price);
+    const alert = State.priceAlerts[s.id];
     const meta = simple ? '' : `
       <div class="meta">
         <span>Symbol${s.guess?'<span class="guess">*</span>':''}:</span>
@@ -172,10 +174,16 @@ Layout.register({
         <span>Kurs:</span>
         <input class="field" type="text" value="${s.price}" onchange="ModuleActions.setStockPrice('${s.id}', this.value)">
       </div>
+      <div class="meta">
+        <span>Alarm över:</span>
+        <input class="field" type="text" placeholder="pris" value="${alert && alert.above != null ? alert.above : ''}" onchange="ModuleActions.setStockAlert('${s.id}', 'above', this.value)">
+        <span>under:</span>
+        <input class="field" type="text" placeholder="pris" value="${alert && alert.below != null ? alert.below : ''}" onchange="ModuleActions.setStockAlert('${s.id}', 'below', this.value)">
+      </div>
     `;
     row.innerHTML = `
       <div class="row-top">
-        <span class="ticker" title="${s.name}">${s.name}</span>
+        <span class="ticker" title="${s.name}">${triggered ? '🔔 ' : ''}${s.name}</span>
         <span class="price">${Format.price(s.price, s.curr)}</span>
       </div>
       <div class="row-sub">
@@ -185,6 +193,7 @@ Layout.register({
         </div>
         <span class="change ${ch.flat?'flat':(ch.pos?'pos':'neg')}">${ch.flat?'':(ch.pos?'▲ ':'▼ ')}${ch.text}</span>
       </div>
+      ${!simple && s.sparkline ? `<div class="row-sparkline">${Charts.sparkline(s.sparkline, { color: ch.pos ? 'var(--gain)' : 'var(--loss)' })}</div>` : ''}
       <div class="row-bottom">
         <span class="name">${s.antal} st &middot; GAV ${s.gav.toLocaleString('sv-SE',{minimumFractionDigits:2})} ${s.curr}${State.ps[s.id] ? ` &middot; <span class="ps-tag">P/S ${State.ps[s.id]}</span>` : ''}</span>
         <span class="value-amt">${Format.amount(value)}${s.curr!=='SEK' ? ' ('+s.curr+')' : ''}</span>

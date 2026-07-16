@@ -114,5 +114,53 @@ const ModuleActions = {
     }
   },
 
-  refreshAll(){ App.refreshMarketData(); }
+  refreshAll(){ App.refreshMarketData(); },
+
+  addWatch(){
+    const nameEl = document.getElementById('watchName');
+    const symEl = document.getElementById('watchSymbol');
+    const name = nameEl.value.trim();
+    const symbol = symEl.value.trim();
+    if(!name || !symbol) return;
+    State.watchlist.push({ symbol, name, curr:'USD', price:null, prevClose:null });
+    State.save();
+    Layout.refreshModule('bevakning');
+  },
+
+  removeWatch(i){
+    State.watchlist.splice(i, 1);
+    const shifted = {};
+    Object.keys(State.priceAlerts).forEach(key => {
+      if(!key.startsWith('w')){ shifted[key] = State.priceAlerts[key]; return; }
+      const idx = parseInt(key.slice(1), 10);
+      if(idx < i) shifted[key] = State.priceAlerts[key];
+      else if(idx > i) shifted['w' + (idx - 1)] = State.priceAlerts[key];
+      // idx === i: bevakningen togs bort, dess alarm följer med
+    });
+    State.priceAlerts = shifted;
+    State.save();
+    Layout.refreshModule('bevakning');
+  },
+
+  setWatchAlert(i, kind, val){ this._setAlert('w' + i, kind, val); },
+  setStockAlert(id, kind, val){ this._setAlert(id, kind, val); },
+
+  _setAlert(id, kind, val){
+    const num = parseFloat(String(val).replace(',', '.'));
+    const alert = State.priceAlerts[id] || (State.priceAlerts[id] = {});
+    if(val === '' || isNaN(num)) delete alert[kind];
+    else alert[kind] = num;
+    if(alert.above == null && alert.below == null) delete State.priceAlerts[id];
+    State.save();
+  },
+
+  async enableNotifications(){
+    const ok = await Alerts.ensurePermission();
+    const statusEl = document.getElementById('notifStatus');
+    if(statusEl){
+      statusEl.textContent = ok
+        ? '✓ Notiser tillåtna (fungerar bara medan appen är öppen i fliken)'
+        : 'Notiser blockerade eller stöds inte i den här webbläsaren.';
+    }
+  }
 };

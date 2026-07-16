@@ -18,9 +18,24 @@ const State = {
   omxData: { value:null, changePct:null, status:'idle', symbolUsed:null },
   veckansTips: [],
 
+  // Bevakningslista: aktier man följer utan att äga. Inte känsligt (ingen
+  // innehavsstorlek), sparas okrypterat precis som råvaru-symbolerna.
+  watchlist: [
+    { symbol:'SMR', name:'NuScale Power', curr:'USD', price:null, prevClose:null }
+  ],
+
+  // Prisalarm: id -> { above?: number, below?: number }. id är s0/s1... för
+  // innehav eller w0/w1... för bevakningslistan.
+  priceAlerts: {},
+
+  // Lokal historik - enda sättet att visa "över tid" i en app utan backend.
+  // Börjar tomt och växer fram efter hand som du öppnar appen/uppdaterar kurser.
+  valueHistory: [],   // [{t: isoDate, total: number}]
+  fundHistory: {},    // fundId -> [{t: isoDate, varde: number}]
+
   // Layout: vilken ordning modulerna visas i, och hur breda de är (flex-basis i px)
   layout: {
-    order: ['aktier','fonder','allokering','ravaror','vinnareforlorare','veckanstips','borsen'],
+    order: ['aktier','fonder','bevakning','allokering','historik','ravaror','vinnareforlorare','utdelning','veckanstips','borsen'],
     widths: {} // t.ex. { aktier: 520 } - saknas nyckel = default-bredd
   },
 
@@ -42,17 +57,53 @@ const State = {
         if(st.targetAktier !== undefined) this.targetAktier = st.targetAktier;
         if(st.layout) this.layout = st.layout;
         if(st.veckansTips) this.veckansTips = st.veckansTips;
+        if(st.watchlist) this.watchlist = st.watchlist.map(w => ({ ...w, price:null, prevClose:null }));
+        if(st.priceAlerts) this.priceAlerts = st.priceAlerts;
+        if(st.valueHistory) this.valueHistory = st.valueHistory;
+        if(st.fundHistory) this.fundHistory = st.fundHistory;
       }
     }catch(e){ /* inget sparat än, kör med defaults */ }
+
+    // En tidigare sparad layout känner inte till moduler som lagts till sen
+    // dess (t.ex. bevakningslista/historik/utdelning) - lägg till dem sist
+    // istället för att de aldrig visas för en återvändande användare.
+    Object.keys(Layout.modules).forEach(id => {
+      if(!this.layout.order.includes(id)) this.layout.order.push(id);
+    });
   },
 
   async save(){
     const symbols = {}; this.STOCKS.forEach(s => symbols[s.id] = s.symbol);
     const commoditySymbols = {}; this.COMMODITIES.forEach(c => commoditySymbols[c.id] = c.symbol);
+    const watchlist = this.watchlist.map(w => ({ symbol:w.symbol, name:w.name, curr:w.curr }));
     const payload = JSON.stringify({
       symbols, commoditySymbols, ps:this.ps, hideAmounts:this.hideAmounts, simpleView:this.simpleView,
-      targetAktier:this.targetAktier, layout:this.layout, veckansTips:this.veckansTips
+      targetAktier:this.targetAktier, layout:this.layout, veckansTips:this.veckansTips,
+      watchlist, priceAlerts:this.priceAlerts, valueHistory:this.valueHistory, fundHistory:this.fundHistory
     });
     await Storage.set('portfolio-state', payload);
+  },
+
+  // Sparar en ögonblicksbild av totalvärdet + varje fonds NAV. Anropas vid
+  // uppstart och efter "Uppdatera kurser" - så historiken växer fram av sig
+  // själv i takt med att appen faktiskt används. Max en punkt per timme och
+  // max 500 punkter, så det inte växer obegränsat i localStorage.
+  recordSnapshot(totalValue){
+    const now = new Date().toISOString();
+    const hourKey = now.slice(0,13);
+    const lastHour = this.valueHistory.length ? this.valueHistory[this.valueHistory.length-1].t.slice(0,13) : null;
+    if(hourKey === lastHour) this.valueHistory[this.valueHistory.length-1] = { t:now, total:totalValue };
+    else this.valueHistory.push({ t:now, total:totalValue });
+    if(this.valueHistory.length > 500) this.valueHistory.shift();
+
+    this.FUNDS.forEach(f => {
+      const hist = this.fundHistory[f.id] || (this.fundHistory[f.id] = []);
+      const lastFundHour = hist.length ? hist[hist.length-1].t.slice(0,13) : null;
+      if(hourKey === lastFundHour) hist[hist.length-1] = { t:now, varde:f.varde };
+      else hist.push({ t:now, varde:f.varde });
+      if(hist.length > 500) hist.shift();
+    });
+
+    this.save();
   }
 };

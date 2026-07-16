@@ -15,6 +15,7 @@ Layout.register({
   row(f){
     const row = document.createElement('div'); row.className = 'row';
     const ch = Format.pct(f.varde, f.kostnad);
+    const hist = (State.fundHistory[f.id] || []).map(h => h.varde);
     row.innerHTML = `
       <div class="row-top">
         <span class="ticker" title="${f.name}">${f.name}</span>
@@ -23,7 +24,8 @@ Layout.register({
       <div class="row-sub">
         <span class="name">Inköpsvärde ${Format.amount(f.kostnad)}</span>
         <span class="change ${ch.pos?'pos':'neg'}">${ch.pos?'▲ ':'▼ '}${ch.text}</span>
-      </div>`;
+      </div>
+      ${hist.length >= 2 ? `<div class="row-sparkline">${Charts.sparkline(hist, { color: ch.pos ? 'var(--gain)' : 'var(--loss)' })}</div>` : ''}`;
     return row;
   }
 });

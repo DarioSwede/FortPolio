@@ -60,6 +60,14 @@
     </div>
     <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:8px;">
       <div style="display:flex; align-items:center; justify-content:space-between;">
+        <span>Prisalarm-notiser</span>
+        <button class="btn" onclick="ModuleActions.enableNotifications()">Aktivera</button>
+      </div>
+      <div id="notifStatus" style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-muted);"></div>
+      <p style="font-size:10.5px; color:var(--text-muted); margin:0;">Fungerar bara medan appen är öppen i en flik - ingen backend att skicka riktiga push-notiser från när appen är stängd.</p>
+    </div>
+    <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+      <div style="display:flex; align-items:center; justify-content:space-between;">
         <span>Anslutning</span>
         <span id="httpsIndicator" class="conn-badge">—</span>
       </div>
@@ -105,6 +113,8 @@
 <script src="js/core/storage.js"></script>
 <script src="js/core/github.js"></script>
 <script src="js/core/network.js"></script>
+<script src="js/core/charts.js"></script>
+<script src="js/core/alerts.js"></script>
 <script src="js/core/crypto.js"></script>
 <script src="js/core/format.js"></script>
 <script src="js/core/state.js"></script>
@@ -120,9 +130,12 @@
      här när du skapar en ny modul-fil. -->
 <script src="js/modules/aktier.js"></script>
 <script src="js/modules/fonder.js"></script>
+<script src="js/modules/bevakning.js"></script>
 <script src="js/modules/allokering.js"></script>
+<script src="js/modules/historik.js"></script>
 <script src="js/modules/ravaror.js"></script>
 <script src="js/modules/vinnareforlorare.js"></script>
+<script src="js/modules/utdelning.js"></script>
 <script src="js/modules/veckanstips.js"></script>
 <script src="js/modules/borsen.js"></script>
 

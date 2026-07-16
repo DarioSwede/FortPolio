@@ -118,6 +118,10 @@ h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; 
 .value-amt{ font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:var(--text); }
 .empty-note{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-muted); padding:16px; text-align:center;}
 
+.row-sparkline{ margin-top:4px; line-height:0; }
+.big-sparkline{ width:100%; line-height:0; }
+.sparkline{ display:block; }
+
 /* ============================================================
    ALLOCATION DONUT
    ============================================================ */
