@@ -3,12 +3,46 @@
    och innehåller "Uppdatera kurser"-flödet som rör flera moduler samtidigt.
 */
 const App = {
+  OPEN_INTERVAL_MS: 5 * 60 * 1000,
+  CLOSED_INTERVAL_MS: 60 * 60 * 1000,
+  nextRefreshAt: null,
+  autoRefreshTimer: null,
+
   async start(){
     await State.load();
     this.wireHeader();
     this.refreshAllModules();
     State.recordSnapshot(this.currentTotal());
     setInterval(() => Layout.refreshModule('borsen'), 60000);
+    this.scheduleNextAutoRefresh();
+    setInterval(() => this.updateCountdownDisplay(), 1000);
+  },
+
+  stockholmIsOpen(){
+    const ex = State.EXCHANGES.find(e => e.name.includes('Stockholm'));
+    return ex ? Market.exchangeStatus(ex).isOpen : false;
+  },
+
+  scheduleNextAutoRefresh(){
+    if(this.autoRefreshTimer) clearTimeout(this.autoRefreshTimer);
+    const interval = this.stockholmIsOpen() ? this.OPEN_INTERVAL_MS : this.CLOSED_INTERVAL_MS;
+    this.nextRefreshAt = Date.now() + interval;
+    this.autoRefreshTimer = setTimeout(() => {
+      const btn = document.getElementById('refreshBtn');
+      if(!btn.disabled) this.refreshMarketData();
+    }, interval);
+    this.updateCountdownDisplay();
+  },
+
+  updateCountdownDisplay(){
+    const el = document.getElementById('autoRefreshStatus');
+    if(!el || this.nextRefreshAt == null) return;
+    const remaining = Math.max(0, this.nextRefreshAt - Date.now());
+    const mins = Math.floor(remaining / 60000);
+    const secs = Math.floor((remaining % 60000) / 1000);
+    const timeStr = `${mins}:${String(secs).padStart(2,'0')}`;
+    const open = this.stockholmIsOpen();
+    el.innerHTML = `<span class="status-dot ${open ? 'open' : 'closed'}"></span>${open ? 'Börsen öppen' : 'Börsen stängd'} · nästa uppdatering om ${timeStr}`;
   },
 
   currentTotal(){
@@ -101,5 +135,6 @@ const App = {
     document.getElementById('stamp').textContent =
       `Senast uppdaterat: ${new Date().toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'})} (${okCount} ok, ${failCount} misslyckades)`;
     btn.disabled = false; btn.textContent = '↻ Uppdatera kurser';
+    this.scheduleNextAutoRefresh();
   }
 };

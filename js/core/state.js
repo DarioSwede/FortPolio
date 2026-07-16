@@ -42,6 +42,10 @@ const State = {
   assignIds(){
     this.STOCKS.forEach((s,i) => s.id = "s"+i);
     this.FUNDS.forEach((f,i) => f.id = "f"+i);
+    // COMMODITIES saknade id helt tidigare - alla rader delade samma
+    // "undefined", så symbolredigering aldrig sparades och (nu) expandera-
+    // vid-klick skulle råka expandera alla rader på en gång.
+    this.COMMODITIES.forEach((c,i) => c.id = "c"+i);
   },
 
   async load(){

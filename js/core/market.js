@@ -57,9 +57,37 @@ const Market = {
     throw lastErr || new Error('alla försök misslyckades');
   },
 
-  // Yahoos quoteSummary-endpoint för utdelningskalender. Mindre pålitlig än
-  // chart-endpointen (stödjer inte alltid samma CORS-proxies), så det här
-  // är bästa-försök: kastar fel som modulen fångar och visar tydligt.
+  // Historiska utdelningar via samma chart-endpoint som redan används för
+  // kurser/historik (events=div) - mycket mer pålitlig genom CORS-proxyn än
+  // quoteSummary nedan, eftersom det är samma beprövade endpoint-form.
+  async fetchDividendHistory(symbol){
+    const target = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=2y&interval=1d&events=div`;
+    const attempts = [
+      target,
+      'https://corsproxy.io/?url=' + encodeURIComponent(target),
+      'https://api.allorigins.win/raw?url=' + encodeURIComponent(target),
+    ];
+    let lastErr;
+    for(const url of attempts){
+      try{
+        const res = await fetch(url);
+        if(!res.ok) throw new Error('http ' + res.status);
+        const data = await res.json();
+        const result = data?.chart?.result?.[0];
+        if(!result) throw new Error('inget svar för symbolen');
+        const divs = result.events?.dividends;
+        if(!divs) return [];
+        return Object.values(divs)
+          .map(d => ({ date: d.date, amount: d.amount }))
+          .sort((a,b) => b.date - a.date);
+      }catch(e){ lastErr = e; }
+    }
+    throw lastErr || new Error('alla försök misslyckades');
+  },
+
+  // Yahoos quoteSummary-endpoint för kommande ex-dag/direktavkastning. Mindre
+  // pålitlig än chart-endpointen ovan (stödjer inte alltid samma CORS-proxies),
+  // så det här är bästa-försök: kastar fel som modulen fångar och visar tydligt.
   async fetchDividendCalendar(symbol){
     const target = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(symbol)}?modules=calendarEvents,summaryDetail`;
     const attempts = [
