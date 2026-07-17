@@ -56,8 +56,46 @@ const Layout = {
 
     const head = document.createElement('div');
     head.className = 'card-head';
-    head.innerHTML = `<h2 class="section"><span class="drag-dots">⠿</span> ${mod.title}</h2>`;
-    this.wireDrag(head, panel);
+
+    // Bara titeln (inte hela head-raden) är dragbar nu - annars skulle ett
+    // klick på uppdateringsknappen nedan också trigga en drag-start.
+    const titleWrap = document.createElement('div');
+    titleWrap.className = 'card-head-drag';
+    titleWrap.innerHTML = `<h2 class="section"><span class="drag-dots">⠿</span> ${mod.title}</h2>`;
+    this.wireDrag(titleWrap, panel);
+    head.appendChild(titleWrap);
+
+    // Moduler med en egen live-datakälla (aktier, råvaror, valutor, ...) kan
+    // ange onRefresh() för att få en egen uppdateringsknapp här istället för
+    // en gemensam global "Uppdatera kurser"-knapp.
+    if(mod.onRefresh){
+      const refreshWrap = document.createElement('div');
+      refreshWrap.className = 'module-refresh';
+      const stamp = document.createElement('span');
+      stamp.className = 'module-stamp';
+      const btn = document.createElement('button');
+      btn.className = 'btn icon-btn';
+      btn.title = 'Uppdatera';
+      btn.textContent = '↻';
+      btn.onclick = async () => {
+        btn.disabled = true;
+        const prevText = btn.textContent;
+        btn.textContent = '…';
+        try{
+          const result = await mod.onRefresh();
+          const time = new Date().toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'});
+          stamp.textContent = (result && result.fail) ? `${time} (${result.fail} fel)` : time;
+        }catch(e){
+          stamp.textContent = 'Fel';
+        }finally{
+          btn.disabled = false;
+          btn.textContent = prevText;
+        }
+      };
+      refreshWrap.appendChild(stamp);
+      refreshWrap.appendChild(btn);
+      head.appendChild(refreshWrap);
+    }
 
     const body = document.createElement('div');
     body.className = 'card-body';

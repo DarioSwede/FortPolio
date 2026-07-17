@@ -1,6 +1,8 @@
 /* main.js
-   Startpunkt. Kopplar ihop header (totalsumma, knappar) med State/Layout,
-   och innehåller "Uppdatera kurser"-flödet som rör flera moduler samtidigt.
+   Startpunkt. Kopplar ihop header (totalsumma, knappar) med State/Layout.
+   Live-datahämtning sker per modul (se resp. modulfils onRefresh) - den här
+   filen håller bara ihop den automatiska bakgrundsuppdateringen som kör
+   alla kategorier i tur och ordning, plus header-vyn.
 */
 const App = {
   // 1 min hade 5-dubblat anropsvolymen (~65-70 sekventiella anrop/cykel mot
@@ -29,15 +31,20 @@ const App = {
     return ex ? Market.exchangeStatus(ex).isOpen : false;
   },
 
+  // Ingen global "Uppdatera kurser"-knapp längre - varje modul har sin egen
+  // (se layout.js/onRefresh). Den här timern kör en tyst bakgrundsuppdatering
+  // av allt, om den inte är pausad via knappen uppe till vänster.
   scheduleNextAutoRefresh(){
     if(this.autoRefreshTimer) clearTimeout(this.autoRefreshTimer);
+    if(State.autoRefreshPaused){
+      this.nextRefreshAt = null;
+      this.updateCountdownDisplay();
+      return;
+    }
     const interval = this.stockholmIsOpen() ? this.OPEN_INTERVAL_MS : this.CLOSED_INTERVAL_MS;
     this.currentIntervalMs = interval;
     this.nextRefreshAt = Date.now() + interval;
-    this.autoRefreshTimer = setTimeout(() => {
-      const btn = document.getElementById('refreshBtn');
-      if(!btn.disabled) this.refreshMarketData();
-    }, interval);
+    this.autoRefreshTimer = setTimeout(() => this.refreshAllMarketData(), interval);
     this.updateCountdownDisplay();
   },
 
@@ -46,7 +53,12 @@ const App = {
   updateCountdownDisplay(){
     const fill = document.getElementById('refreshBarFill');
     const time = document.getElementById('refreshBarTime');
-    if(!fill || !time || this.nextRefreshAt == null) return;
+    if(!fill || !time) return;
+    if(State.autoRefreshPaused || this.nextRefreshAt == null){
+      fill.style.width = '0%';
+      time.textContent = 'Pausad';
+      return;
+    }
     const remaining = Math.max(0, this.nextRefreshAt - Date.now());
     const mins = Math.floor(remaining / 60000);
     const secs = Math.floor((remaining % 60000) / 1000);
@@ -56,13 +68,13 @@ const App = {
     fill.style.width = (progress * 100) + '%';
   },
 
-  // Badge för "Svenska börsen öppen/stängd" - egen, väl synlig rad i toppen
-  // istället för att vara ihopskriven med nedräkningstexten.
+  // Svensk flagga i färg när börsen är öppen, gråtonad när den är stängd -
+  // egen väl synlig rad i toppen istället för ihopskriven med annan text.
   updateMarketIndicator(){
     const el = document.getElementById('marketIndicator');
     if(!el) return;
     const open = this.stockholmIsOpen();
-    el.innerHTML = `<span class="status-dot ${open ? 'open' : 'closed'}"></span>${open ? 'Svenska börsen öppen' : 'Svenska börsen stängd'}`;
+    el.innerHTML = `<span class="market-flag${open ? '' : ' closed'}">🇸🇪</span>${open ? 'Svenska börsen öppen' : 'Svenska börsen stängd'}`;
     el.classList.toggle('open', open);
     el.classList.toggle('closed', !open);
   },
@@ -80,9 +92,18 @@ const App = {
   },
 
   wireHeader(){
-    document.getElementById('refreshBtn').addEventListener('click', () => this.refreshMarketData());
-    document.getElementById('switchEl').addEventListener('click', () => ModuleActions.toggleAmounts());
+    document.getElementById('pauseSwitchEl').addEventListener('click', () => ModuleActions.toggleAutoRefreshPause());
+    document.getElementById('hideAmountsSwitchEl').addEventListener('click', () => ModuleActions.toggleAmounts());
     document.getElementById('simpleViewSwitchEl').addEventListener('click', () => ModuleActions.toggleSimpleView());
+    this.updatePauseToggle();
+  },
+
+  updatePauseToggle(){
+    const label = document.getElementById('pauseLabel');
+    const sw = document.getElementById('pauseSwitchEl');
+    if(!label || !sw) return;
+    label.textContent = State.autoRefreshPaused ? 'Pausad' : 'Auto-uppdatering';
+    sw.classList.toggle('on', State.autoRefreshPaused);
   },
 
   refreshAllModules(){
@@ -108,21 +129,20 @@ const App = {
     document.getElementById('totalAktierValue').textContent = Format.amount(aktier);
     document.getElementById('totalFonderValue').textContent = Format.amount(fonder);
 
-    document.getElementById('hideLabel').textContent = State.hideAmounts ? 'Endast kurser' : 'Visa belopp';
-    document.getElementById('switchEl').classList.toggle('on', State.hideAmounts);
+    // Etiketten är ett statiskt "Visa belopp" i Inställningar nu (inte längre
+    // dynamisk text bredvid en knapp i headern) - så växeln ska stå PÅ när
+    // beloppen faktiskt syns, dvs. inverterat mot hideAmounts-flaggan.
+    document.getElementById('hideAmountsSwitchEl').classList.toggle('on', !State.hideAmounts);
     document.getElementById('simpleViewSwitchEl').classList.toggle('on', State.simpleView);
   },
 
-  async refreshMarketData(){
-    const btn = document.getElementById('refreshBtn');
-    btn.disabled = true; btn.textContent = '↻ Uppdaterar …';
-    let okCount = 0, failCount = 0;
+  // --- Live-hämtning, en kategori i taget. Anropas antingen från en enskild
+  // modul (dess egen ↻-knapp, se layout.js) eller i tur och ordning av
+  // refreshAllMarketData() (bakgrundstimern). Returnerar { ok, fail } så
+  // uppdateringsknappen kan visa en liten stämpel.
 
-    // Råvaror och valutor hämtas allra först - de är en liten fast grupp
-    // (10 anrop totalt) men hamnade tidigare sist i en lång sekventiell kö
-    // av 50+ anrop (aktier + historik + OMXS30-listan), så om en gratis
-    // CORS-proxy började strypa/rate-limita hann de aldrig uppdateras trots
-    // att aktierna längre fram redan hade lyckats.
+  async refreshCommodities(){
+    let ok = 0, fail = 0;
     for(const c of State.COMMODITIES){
       if(!c.symbol) continue;
       try{
@@ -131,9 +151,15 @@ const App = {
         c.price = q.price;
         c.prevClose = q.prevClose;
         c.status = 'ok';
-        okCount++;
-      }catch(e){ c.status = 'error'; failCount++; }
+        ok++;
+      }catch(e){ c.status = 'error'; fail++; }
     }
+    Layout.refreshModule('ravaror');
+    return { ok, fail };
+  },
+
+  async refreshCurrencies(){
+    let ok = 0, fail = 0;
     for(const c of State.CURRENCIES){
       if(!c.symbol) continue;
       try{
@@ -142,28 +168,40 @@ const App = {
         c.price = q.price;
         c.prevClose = q.prevClose;
         c.status = 'ok';
-        okCount++;
-      }catch(e){ c.status = 'error'; failCount++; }
-      // Årstrenden bygger på en extra historik-hämtning (1 stängningskurs
-      // per månad senaste året) - bara för valutor, inte kritiskt om den
-      // misslyckas, räknas inte separat.
+        ok++;
+      }catch(e){ c.status = 'error'; fail++; }
+      // Årstrenden bygger på en extra historik-hämtning, inte kritisk om den
+      // misslyckas - räknas inte in i ok/fail.
       try{
         const hist = await Market.fetchHistory(c.symbol, '1y', '1mo');
         if(hist && hist.length) c.yearAgoPrice = hist[0];
       }catch(e){ /* årstrend inte tillgänglig just nu */ }
     }
+    Layout.refreshModule('valutor');
+    return { ok, fail };
+  },
 
+  async refreshStocks(){
+    let ok = 0, fail = 0;
     for(const s of State.STOCKS){
       if(!s.symbol) continue;
       try{
         const meta = await Market.fetchQuote(s.symbol);
         const q = Market.normalizeQuote(meta);
         s.price = q.price;
-        okCount++;
-      }catch(e){ failCount++; }
+        ok++;
+      }catch(e){ fail++; }
       try{ s.sparkline = await Market.fetchHistory(s.symbol); }
       catch(e){ /* ingen graf just nu - inte kritiskt */ }
     }
+    Layout.refreshModule('aktier');
+    Overview.render();
+    this.updateHeaderTotals();
+    return { ok, fail };
+  },
+
+  async refreshWatchlist(){
+    let ok = 0, fail = 0;
     for(const w of State.watchlist){
       if(!w.symbol) continue;
       try{
@@ -172,20 +210,32 @@ const App = {
         w.price = q.price;
         w.prevClose = q.prevClose;
         w.curr = q.currency || w.curr;
-        okCount++;
-      }catch(e){ failCount++; /* lämna senaste kända pris orört */ }
+        ok++;
+      }catch(e){ fail++; /* lämna senaste kända pris orört */ }
       try{ w.sparkline = await Market.fetchHistory(w.symbol); }
       catch(e){ /* ingen graf just nu */ }
     }
+    Layout.refreshModule('bevakning');
+    return { ok, fail };
+  },
+
+  async refreshOMXS30(){
+    let ok = 0, fail = 0;
     for(const s of State.OMXS30_LIST){
       if(!s.symbol) continue;
       try{
         const meta = await Market.fetchQuote(s.symbol);
         const prev = meta.chartPreviousClose ?? meta.previousClose;
         if(prev) s.changePct = ((meta.regularMarketPrice - prev) / prev) * 100;
-        okCount++;
-      }catch(e){ failCount++; /* hoppa över just den här */ }
+        ok++;
+      }catch(e){ fail++; /* hoppa över just den här */ }
     }
+    Layout.refreshModule('vinnareforlorare');
+    return { ok, fail };
+  },
+
+  async refreshOMXIndex(){
+    let ok = 0, fail = 0;
     try{
       const { meta, symbolUsed } = await Market.fetchQuoteWithFallbacks(State.OMX_CANDIDATES);
       State.omxData.value = meta.regularMarketPrice;
@@ -193,19 +243,34 @@ const App = {
       State.omxData.changePct = prev ? ((meta.regularMarketPrice - prev) / prev) * 100 : null;
       State.omxData.symbolUsed = symbolUsed;
       State.omxData.status = 'ok';
-      okCount++;
-    }catch(e){ State.omxData.status = 'error'; failCount++; }
+      ok++;
+    }catch(e){ State.omxData.status = 'error'; fail++; }
+    Layout.refreshModule('borsen');
+    return { ok, fail };
+  },
 
-    this.refreshAllModules();
+  // Bakgrundscykeln - körs av auto-uppdateringstimern. Råvaror/valutor körs
+  // först (liten fast grupp) innan de tyngre, mer utbytbara listorna
+  // (aktier+historik, OMXS30) som lättare kan trigga rate-limiting hos de
+  // fria CORS-proxyerna.
+  async refreshAllMarketData(){
+    const results = [
+      await this.refreshCommodities(),
+      await this.refreshCurrencies(),
+      await this.refreshStocks(),
+      await this.refreshWatchlist(),
+      await this.refreshOMXS30(),
+      await this.refreshOMXIndex(),
+    ];
+    const ok = results.reduce((sum, r) => sum + r.ok, 0);
+    const fail = results.reduce((sum, r) => sum + r.fail, 0);
     State.recordSnapshot(this.currentTotal());
     const time = new Date().toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'});
-    // Bara nämna misslyckade poster om det faktiskt förekom några - annars
-    // tar "0 misslyckades av X poster" bara plats i onödan.
-    const summary = failCount > 0
-      ? `${okCount} ok, ${failCount} misslyckades av ${okCount+failCount} poster`
-      : `${okCount} ok`;
-    document.getElementById('stamp').textContent = `Senast uppdaterat: ${time} (${summary})`;
-    btn.disabled = false; btn.textContent = '↻ Uppdatera kurser';
+    const summary = fail > 0
+      ? `${ok} ok, ${fail} misslyckades av ${ok+fail} poster`
+      : `${ok} ok`;
+    const stampEl = document.getElementById('stamp');
+    if(stampEl) stampEl.textContent = `Senast auto-uppdaterat: ${time} (${summary})`;
     this.scheduleNextAutoRefresh();
   }
 };

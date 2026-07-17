@@ -20,10 +20,11 @@ const ModuleActions = {
     const c = State.CURRENCIES.find(x => x.id === id); if(!c) return;
     c.symbol = val.trim(); State.save();
   },
-  toggleSortDir(moduleId){
-    State.sortDir[moduleId] = State.sortDir[moduleId] === 'desc' ? 'asc' : 'desc';
+  toggleAutoRefreshPause(){
+    State.autoRefreshPaused = !State.autoRefreshPaused;
     State.save();
-    Layout.refreshModule(moduleId);
+    App.updatePauseToggle();
+    App.scheduleNextAutoRefresh();
   },
 
   setTargetAktier(val){

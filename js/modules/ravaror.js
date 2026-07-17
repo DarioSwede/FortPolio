@@ -5,6 +5,8 @@ Layout.register({
 
   expanded: new Set(),
 
+  async onRefresh(){ return App.refreshCommodities(); },
+
   build(container){
     const list = document.createElement('div'); list.className = 'grid-list';
     State.COMMODITIES.forEach(c => list.appendChild(this.row(c)));

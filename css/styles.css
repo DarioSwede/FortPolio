@@ -22,7 +22,8 @@ header{ margin-bottom:22px; }
 
 .totals-block{ margin-bottom:14px; }
 .total-row{ display:flex; align-items:baseline; flex-wrap:wrap; gap:12px; }
-.total-value{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(32px,6vw,44px); letter-spacing:-.01em; line-height:1;}
+.total-value{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(32px,6vw,44px); letter-spacing:-.01em; line-height:1; cursor:pointer; }
+.total-value:hover{ opacity:.85; }
 .total-change{ font-family:'IBM Plex Mono',monospace; font-size:14px; font-weight:600; padding:5px 10px; border-radius:6px; background:rgba(47,191,157,.12); color:var(--gain); }
 .total-change.neg{ background:rgba(226,87,76,.12); color:var(--loss);}
 .totals-split{ display:flex; gap:18px; margin-top:8px; flex-wrap:wrap; }
@@ -32,9 +33,10 @@ header{ margin-bottom:22px; }
 .market-indicator{ display:inline-flex; align-items:center; gap:7px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); background:var(--surface-hi); border:1px solid var(--border); padding:6px 12px; border-radius:999px; margin-bottom:14px; }
 .market-indicator.open{ border-color:rgba(47,191,157,.4); }
 .market-indicator.closed{ border-color:rgba(226,87,76,.35); }
+.market-flag{ font-size:15px; line-height:1; }
+.market-flag.closed{ filter:grayscale(1); opacity:.5; }
 
-.refresh-row{ display:flex; align-items:center; gap:10px; margin-top:14px; flex-wrap:wrap; }
-.refresh-bar{ position:relative; width:160px; max-width:100%; height:24px; background:var(--surface-hi); border:1px solid var(--border); border-radius:999px; overflow:hidden; flex-shrink:0; }
+.refresh-bar{ position:relative; width:160px; max-width:100%; height:24px; background:var(--surface-hi); border:1px solid var(--border); border-radius:999px; overflow:hidden; flex-shrink:0; margin-top:14px; }
 .refresh-bar-fill{ position:absolute; left:0; top:0; height:100%; width:0%; background:var(--gain); transition:width 1s linear; }
 .refresh-bar-time{ position:relative; z-index:1; display:flex; align-items:center; justify-content:center; height:100%; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; color:var(--text); }
 .stamp{ display:block; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-muted); margin-top:8px;}
@@ -81,10 +83,14 @@ input.field:focus, textarea.field:focus{ outline:none; border-color:var(--gold);
 .panel.drag-over{ outline:2px dashed var(--gold); outline-offset:4px; border-radius:10px; }
 
 .card{ background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; height:100%; }
-.card-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; cursor:grab; user-select:none; touch-action:none; }
-.card-head:active{ cursor:grabbing; }
+.card-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; }
+.card-head-drag{ cursor:grab; user-select:none; touch-action:none; min-width:0; flex:1; }
+.card-head-drag:active{ cursor:grabbing; }
 h2.section{ font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; letter-spacing:.03em; color:var(--text-muted); text-transform:uppercase; display:flex; align-items:center; gap:6px; }
 h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; }
+.module-refresh{ display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.module-refresh .module-stamp{ font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:var(--text-muted); white-space:nowrap; }
+.module-refresh button.icon-btn{ padding:3px 8px; font-size:12px; }
 
 .resize-handle{
   position:absolute; top:0; right:-9px; width:18px; height:100%; cursor:ew-resize;
@@ -238,7 +244,7 @@ h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; 
   .overview-donuts{ display:none; }
   .total-row{ justify-content:center; }
   .totals-split{ justify-content:center; }
-  .refresh-row{ justify-content:center; }
+  .refresh-bar{ margin-left:auto; margin-right:auto; }
 
   .columns{ display:block; column-count:2; column-gap:10px; height:auto !important; }
   /* Desktopens masonry sätter position:absolute + left/top/width inline via JS -

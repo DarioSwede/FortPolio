@@ -22,15 +22,15 @@
   <header>
     <div class="header-top">
       <div class="hide-toggle">
-        <span class="hide-toggle-label" id="hideLabel">Visa belopp</span>
-        <div class="switch" id="switchEl"><div class="knob"></div></div>
+        <span class="hide-toggle-label" id="pauseLabel">Auto-uppdatering</span>
+        <div class="switch" id="pauseSwitchEl"><div class="knob"></div></div>
       </div>
       <button class="btn icon-btn" onclick="ModuleActions.openSettings()" title="Inställningar">⚙</button>
     </div>
 
     <div class="totals-block">
       <div class="total-row">
-        <div class="total-value" id="totalValue">— kr</div>
+        <div class="total-value" id="totalValue" onclick="ModuleActions.toggleAmounts()" title="Klicka för att visa/dölja belopp">— kr</div>
         <div class="total-change" id="totalChange">—</div>
       </div>
       <div class="totals-split">
@@ -43,12 +43,9 @@
 
     <div class="overview-donuts" id="overviewDonuts"></div>
 
-    <div class="refresh-row">
-      <button class="btn" style="padding:6px 10px; font-size:11px;" id="refreshBtn">↻ Uppdatera kurser</button>
-      <div class="refresh-bar" id="refreshBar" title="Tid till nästa automatiska uppdatering">
-        <div class="refresh-bar-fill" id="refreshBarFill"></div>
-        <span class="refresh-bar-time" id="refreshBarTime"></span>
-      </div>
+    <div class="refresh-bar" id="refreshBar" title="Tid till nästa automatiska bakgrundsuppdatering">
+      <div class="refresh-bar-fill" id="refreshBarFill"></div>
+      <span class="refresh-bar-time" id="refreshBarTime"></span>
     </div>
     <span class="stamp" id="stamp"></span>
   </header>
@@ -63,6 +60,10 @@
     <div class="overlay-box-head">
       <h3 style="margin-bottom:0;">Inställningar</h3>
       <button class="btn icon-btn" onclick="ModuleActions.closeSettings()" title="Stäng">✕</button>
+    </div>
+    <div class="settings-row">
+      <span>Visa belopp</span>
+      <div class="switch" id="hideAmountsSwitchEl"><div class="knob"></div></div>
     </div>
     <div class="settings-row">
       <span>Enkel vy (aktier)</span>

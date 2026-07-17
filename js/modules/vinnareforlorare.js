@@ -1,18 +1,20 @@
 /* modules/vinnareforlorare.js
    Rankar OMX30-bolagen (se DATA.OMXS30_LIST i data.js) efter dagens
-   procentuella rörelse. Kräver att "Uppdatera kurser" har körts minst
+   procentuella rörelse. Kräver att kortets egen ↻-knapp har tryckts minst
    en gång - innan dess visas ett meddelande om det.
 */
 Layout.register({
   id: 'vinnareforlorare',
   title: 'Dagens vinnare & förlorare',
 
+  async onRefresh(){ return App.refreshOMXS30(); },
+
   build(container){
     const list = State.OMXS30_LIST.filter(s => s.changePct != null);
 
     if(list.length === 0){
       const empty = document.createElement('div'); empty.className = 'empty-note';
-      empty.textContent = 'Tryck "Uppdatera kurser" högst upp för att hämta dagens rörelser bland OMX30-bolagen.';
+      empty.textContent = 'Tryck ↻ i kortets hörn för att hämta dagens rörelser bland OMX30-bolagen.';
       container.appendChild(empty);
       return;
     }

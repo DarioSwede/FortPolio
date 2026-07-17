@@ -3,6 +3,8 @@ Layout.register({
   id: 'borsen',
   title: 'Börsen idag',
 
+  async onRefresh(){ return App.refreshOMXIndex(); },
+
   build(container){
     const now = Market.stockholmNow();
     const day = now.getDay();

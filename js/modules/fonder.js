@@ -5,21 +5,9 @@ Layout.register({
   defaultWidth: 460,
 
   build(container){
-    const sortRow = document.createElement('div'); sortRow.style.cssText = 'display:flex; justify-content:flex-end;';
-    const sortDir = State.sortDir.fonder;
-    const sortBtn = document.createElement('button'); sortBtn.className = 'chip';
-    sortBtn.textContent = `Vinst/förlust ${sortDir === 'desc' ? '▼' : '▲'}`;
-    sortBtn.title = 'Byt sorteringsriktning';
-    sortBtn.onclick = () => ModuleActions.toggleSortDir('fonder');
-    sortRow.appendChild(sortBtn);
-    container.appendChild(sortRow);
-
     const list = document.createElement('div'); list.className = 'grid-list';
     State.FUNDS.slice()
-      .sort((a,b) => {
-        const diff = Format.pct(b.varde,b.kostnad).raw - Format.pct(a.varde,a.kostnad).raw; // desc = bäst först
-        return sortDir === 'asc' ? -diff : diff;
-      })
+      .sort((a,b) => Format.pct(b.varde,b.kostnad).raw - Format.pct(a.varde,a.kostnad).raw) // vinnare först
       .forEach(f => list.appendChild(this.row(f)));
     container.appendChild(list);
   },

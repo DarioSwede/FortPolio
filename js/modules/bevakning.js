@@ -5,6 +5,8 @@ Layout.register({
   defaultWidth: 420,
   addOpen: false,
 
+  async onRefresh(){ return App.refreshWatchlist(); },
+
   build(container){
     const list = document.createElement('div'); list.className = 'grid-list';
     if(State.watchlist.length === 0){

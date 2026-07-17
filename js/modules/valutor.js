@@ -5,6 +5,8 @@ Layout.register({
 
   expanded: new Set(),
 
+  async onRefresh(){ return App.refreshCurrencies(); },
+
   build(container){
     const period = State.valutorTrendPeriod || 'day';
     const switchRow = document.createElement('div');
