@@ -187,8 +187,13 @@ const App = {
 
     this.refreshAllModules();
     State.recordSnapshot(this.currentTotal());
-    document.getElementById('stamp').textContent =
-      `Senast uppdaterat: ${new Date().toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'})} (${okCount} ok, ${failCount} misslyckades av ${okCount+failCount} poster)`;
+    const time = new Date().toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'});
+    // Bara nämna misslyckade poster om det faktiskt förekom några - annars
+    // tar "0 misslyckades av X poster" bara plats i onödan.
+    const summary = failCount > 0
+      ? `${okCount} ok, ${failCount} misslyckades av ${okCount+failCount} poster`
+      : `${okCount} ok`;
+    document.getElementById('stamp').textContent = `Senast uppdaterat: ${time} (${summary})`;
     btn.disabled = false; btn.textContent = '↻ Uppdatera kurser';
     this.scheduleNextAutoRefresh();
   }
