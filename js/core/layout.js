@@ -120,18 +120,26 @@ const Layout = {
     return panel;
   },
 
+  MOBILE_GAP: 10,
+
   // Räknar om position/bredd/höjd för alla paneler. Körs efter renderAll(),
-  // efter varje drag/resize, och på window-resize. No-op på mobil - där
-  // sköter CSS multicol (column-count) packningen istället.
+  // efter varje drag/resize, och på window-resize. Samma masonry-algoritm på
+  // mobil också (2 kolumner istället för UNIT_COLS) - CSS column-count gav
+  // stora tomma ytor bredvid en enskild hög modul (t.ex. Aktier med en lång
+  // aktielista) eftersom det bara "fyller" en kolumn i taget utan att veta
+  // vad som kommer sedan. Egna (skrivbords-)breddval ignoreras på mobil -
+  // varje modul är 1 av 2 spalter bred som standard, och Pass 3 nedan fyller
+  // ut den till full bredd om den råkar stå ensam.
   relayout(){
     const columns = document.getElementById('columns');
     if(!columns) return;
-    if(window.innerWidth <= this.MOBILE_BREAKPOINT) return;
+    const isMobile = window.innerWidth <= this.MOBILE_BREAKPOINT;
 
     const containerWidth = columns.getBoundingClientRect().width;
     if(containerWidth < 50) return;
 
-    const N = this.UNIT_COLS, GAP = this.GAP;
+    const N = isMobile ? 2 : this.UNIT_COLS;
+    const GAP = isMobile ? this.MOBILE_GAP : this.GAP;
     const unitWidth = (containerWidth - (N - 1) * GAP) / N;
     const colHeights = new Array(N).fill(0);
     const panels = [...columns.querySelectorAll(':scope > .panel')];
@@ -143,8 +151,8 @@ const Layout = {
     const spans = panels.map(panel => {
       const id = panel.dataset.id;
       const mod = this.modules[id];
-      const custom = State.layout.colSpans[id];
-      const span = Math.max(1, Math.min(N, custom || this.defaultColSpan(mod)));
+      const custom = isMobile ? undefined : State.layout.colSpans[id];
+      const span = isMobile ? 1 : Math.max(1, Math.min(N, custom || this.defaultColSpan(mod)));
       panel.style.position = 'absolute';
       panel.style.width = widthOf(span) + 'px';
       return { span, custom: custom != null };

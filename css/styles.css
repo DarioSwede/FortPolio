@@ -272,11 +272,10 @@ h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; 
   .totals-split{ justify-content:center; }
   .refresh-bar{ margin-left:auto; margin-right:auto; }
 
-  .columns{ display:block; column-count:2; column-gap:10px; height:auto !important; }
-  /* Desktopens masonry sätter position:absolute + left/top/width inline via JS -
-     måste nollställas med !important här, annars vinner inline-stilarna över
-     mobilens column-count-layout. */
-  .panel{ display:inline-block !important; position:static !important; left:auto !important; top:auto !important; width:100% !important; min-width:0; break-inside:avoid; margin-bottom:10px; }
+  /* Samma JS-masonry som skrivbordsläget (Layout.relayout(), 2 kolumner) -
+     den gamla CSS column-count-lösningen lämnade ofta halva skärmen tom
+     bredvid en enskild hög modul, eftersom den bara fyller en kolumn i
+     taget utan att veta vad som kommer sedan. */
   .card{ height:auto !important; overflow:visible !important; }
   .resize-handle, .resize-handle-v{ display:none; }
 
