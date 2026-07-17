@@ -26,6 +26,15 @@ const ModuleActions = {
     App.scheduleNextAutoRefresh();
   },
 
+  // Skalar hela skrivbordsgränssnittet (CSS zoom på .app), inte bara texten
+  // - annars hade paddning/ikoner/kort blivit fel i förhållande till texten.
+  // Gäller bara skrivbordet; mobilen nollställer alltid till 1 (egen layout).
+  setUiScale(val){
+    State.uiScale = Math.max(1, Math.min(1.6, parseInt(val, 10) / 100));
+    State.save();
+    App.applyUiScale();
+  },
+
   setTargetAktier(val){
     let n = parseFloat(val);
     if(isNaN(n)) n = 35;

@@ -18,13 +18,26 @@ const App = {
   async start(){
     await State.load();
     this.wireHeader();
+    this.applyUiScale();
     Redeye.init();
     this.refreshAllModules();
     State.recordSnapshot(this.currentTotal());
+    HistoryChart.render();
     setInterval(() => Layout.refreshModule('borsen'), 60000);
     this.scheduleNextAutoRefresh();
     this.updateMarketIndicator();
     setInterval(() => { this.updateCountdownDisplay(); this.updateMarketIndicator(); }, 1000);
+  },
+
+  // Skalar hela skrivbordsgränssnittet via CSS zoom på .app (nollställs på
+  // mobil i CSS oavsett sparat värde - se mobilblocket i styles.css).
+  applyUiScale(){
+    document.documentElement.style.setProperty('--ui-scale', State.uiScale);
+    const slider = document.getElementById('uiScaleSlider');
+    const label = document.getElementById('uiScaleValue');
+    const pct = Math.round(State.uiScale * 100);
+    if(slider) slider.value = pct;
+    if(label) label.textContent = pct + '%';
   },
 
   stockholmIsOpen(){
@@ -105,6 +118,7 @@ const App = {
     Layout.renderAll();
     Overview.render();
     this.updateHeaderTotals();
+    HistoryChart.render();
   },
 
   updateHeaderTotals(){
@@ -243,6 +257,7 @@ const App = {
     const ok = results.reduce((sum, r) => sum + r.ok, 0);
     const fail = results.reduce((sum, r) => sum + r.fail, 0);
     State.recordSnapshot(this.currentTotal());
+    HistoryChart.render();
     const time = new Date().toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'});
     const summary = fail > 0
       ? `${ok} ok, ${fail} misslyckades av ${ok+fail} poster`

@@ -30,6 +30,10 @@ const State = {
   // Pausar den automatiska bakgrundsuppdateringen (App.refreshAllMarketData)
   // - manuell uppdatering sker ändå alltid per modul via dess egen knapp.
   autoRefreshPaused: false,
+  // Skalar hela skrivbordsgränssnittet (inte bara text) via CSS zoom på
+  // .app - se Inställningar. Nollställs alltid till 1 på mobil oavsett
+  // sparat värde (egen kompakt layout där, ska inte skalas).
+  uiScale: 1,
   targetAktier: 35,
   omxData: { value:null, changePct:null, status:'idle', symbolUsed:null },
   veckansTips: [],
@@ -60,7 +64,7 @@ const State = {
   // hamnar i rutnätets "dense"-packning - fri placering utan att moduler
   // behöver låsas ihop i grupper.
   layout: {
-    order: ['borsen','aktier','fonder','ravaror','bevakning','allokering','historik','vinnareforlorare','valutor','utdelning','veckanstips'],
+    order: ['borsen','aktier','fonder','ravaror','bevakning','allokering','vinnareforlorare','valutor','utdelning','veckanstips'],
     colSpans: { borsen:7, aktier:17, fonder:24 }, // saknas nyckel = modulens defaultColSpan
     heights: {} // t.ex. { borsen: 640 } - saknas nyckel = auto (innehållsstyrd höjd)
   },
@@ -94,6 +98,7 @@ const State = {
         if(st.targetAktier !== undefined) this.targetAktier = st.targetAktier;
         if(st.valutorTrendPeriod) this.valutorTrendPeriod = st.valutorTrendPeriod;
         this.autoRefreshPaused = !!st.autoRefreshPaused;
+        if(st.uiScale) this.uiScale = st.uiScale;
         if(st.layout){
           this.layout = st.layout;
           if(!this.layout.colSpans) this.layout.colSpans = (st.layout.widths ? {} : { borsen:7, aktier:17, fonder:24 });
@@ -135,7 +140,7 @@ const State = {
     const watchlist = this.watchlist.map(w => ({ symbol:w.symbol, name:w.name, curr:w.curr }));
     const payload = JSON.stringify({
       symbols, commoditySymbols, currencySymbols, ps:this.ps, hideAmounts:this.hideAmounts, simpleView:this.simpleView,
-      targetAktier:this.targetAktier, valutorTrendPeriod:this.valutorTrendPeriod, autoRefreshPaused:this.autoRefreshPaused, layout:this.layout, veckansTips:this.veckansTips, hiddenModules:this.hiddenModules,
+      targetAktier:this.targetAktier, valutorTrendPeriod:this.valutorTrendPeriod, autoRefreshPaused:this.autoRefreshPaused, uiScale:this.uiScale, layout:this.layout, veckansTips:this.veckansTips, hiddenModules:this.hiddenModules,
       watchlist, priceAlerts:this.priceAlerts, valueHistory:this.valueHistory, fundHistory:this.fundHistory,
       redeyeNews:this.redeyeNews, redeyeLastViewed:this.redeyeLastViewed
     });

@@ -11,7 +11,7 @@ body{
   background:var(--bg); color:var(--text); font-family:'Inter',sans-serif;
   min-height:100vh; padding:28px 8px 90px; -webkit-font-smoothing:antialiased;
 }
-.app{ max-width:2600px; margin:0 auto; }
+.app{ max-width:2600px; margin:0 auto; zoom:var(--ui-scale, 1); }
 code{ background:var(--surface-hi); padding:1px 5px; border-radius:4px; font-family:'IBM Plex Mono',monospace; font-size:.9em; }
 
 /* ============================================================
@@ -22,18 +22,32 @@ header{ margin-bottom:22px; }
    oavsett bredden på knapparna i sido-kolumnerna, inte bara jämnt fördelad. */
 .header-top{ display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:12px; margin-bottom:6px; }
 .header-top .refresh-bar{ justify-self:center; margin-top:0; }
+.stamp{ display:block; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-muted); margin-top:8px;}
+#stamp{ text-align:center; margin-bottom:14px; }
 
-.totals-block{ margin-bottom:14px; }
-.total-row{ display:flex; align-items:baseline; flex-wrap:wrap; gap:12px; }
-.total-value{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(32px,6vw,44px); letter-spacing:-.01em; line-height:1; cursor:pointer; }
+/* Hero-kortet samlar totalbelopp, historik-graf och börsstatus/allokering
+   i en enda inramad yta istället för löst flytande text - tätare och mer
+   sammanhållet än den tidigare uppradade headern. */
+.hero-card{ display:flex; flex-wrap:wrap; background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+.hero-label{ font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; }
+
+.hero-main{ flex:1.4 1 260px; min-width:220px; padding:20px 24px; }
+.total-value{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(28px,3.4vw,40px); letter-spacing:-.01em; line-height:1; cursor:pointer; }
 .total-value:hover{ opacity:.85; }
-.total-change{ font-family:'IBM Plex Mono',monospace; font-size:14px; font-weight:600; padding:5px 10px; border-radius:6px; background:rgba(47,191,157,.12); color:var(--gain); }
+.total-change{ display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; padding:4px 9px; border-radius:6px; background:rgba(47,191,157,.12); color:var(--gain); margin-top:10px; }
 .total-change.neg{ background:rgba(226,87,76,.12); color:var(--loss);}
-.totals-split{ display:flex; gap:18px; margin-top:8px; flex-wrap:wrap; }
+.totals-split{ display:flex; gap:18px; margin-top:12px; flex-wrap:wrap; }
 .totals-split-item{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--text); }
 .totals-split-label{ color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; font-size:10px; margin-right:6px; }
 
-.market-indicator{ display:inline-flex; align-items:center; gap:7px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); background:var(--surface-hi); border:1px solid var(--border); padding:6px 12px; border-radius:999px; margin-bottom:14px; }
+.hero-chart{ flex:1 1 200px; min-width:180px; padding:20px 24px; border-left:1px solid var(--border); display:flex; flex-direction:column; }
+.hero-chart-body{ flex:1; min-height:48px; display:flex; align-items:center; line-height:0; }
+.hero-chart-body svg{ width:100%; display:block; }
+.hero-chart-change{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-muted); margin-top:10px; }
+
+.hero-status{ flex:1 1 200px; min-width:190px; padding:20px 24px; border-left:1px solid var(--border); display:flex; flex-direction:column; justify-content:center; gap:12px; }
+
+.market-indicator{ display:inline-flex; align-self:flex-start; align-items:center; gap:7px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); background:var(--surface-hi); border:1px solid var(--border); padding:6px 12px; border-radius:999px; }
 .market-indicator.open{ border-color:rgba(47,191,157,.4); }
 .market-indicator.closed{ border-color:rgba(226,87,76,.35); }
 .market-flag{ font-size:15px; line-height:1; }
@@ -45,8 +59,6 @@ header{ margin-bottom:22px; }
 .refresh-bar-fill{ position:absolute; left:0; top:0; height:100%; width:0%; background:var(--gain); transition:width 1s linear; }
 .refresh-bar.paused .refresh-bar-fill{ background:var(--border); }
 .refresh-bar-time{ position:relative; z-index:1; display:flex; align-items:center; justify-content:center; height:100%; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; color:var(--text); }
-.stamp{ display:block; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-muted); margin-top:8px;}
-#stamp{ text-align:center; margin-bottom:14px; }
 
 .hide-toggle{ display:flex; align-items:center; gap:10px; }
 .hide-toggle-label{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; color:var(--text-muted); text-transform:uppercase;}
@@ -70,9 +82,11 @@ input.field:focus, textarea.field:focus{ outline:none; border-color:var(--gold);
 /* ============================================================
    LAYOUT ENGINE (draggable / resizable panels)
    ============================================================ */
-.overview-donuts{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px 24px; margin-bottom:6px; }
+/* Sitter i .hero-status (en smal sidokolumn i hero-kortet) - staplas
+   vertikalt istället för att bredda ut sig, så det passar bredden. */
+.overview-donuts{ display:flex; flex-direction:column; gap:10px; }
 .overview-donuts.hidden{ display:none; }
-.overview-donuts > div{ min-width:120px; max-width:190px; }
+.overview-donuts > div{ width:100%; }
 .overview-donuts .chip-group-label{ font-size:9px; margin-bottom:3px; }
 .overview-donuts .percent-bar{ height:6px !important; }
 .overview-donuts .bar-legend{ margin-top:4px; gap:4px 10px; }
@@ -271,11 +285,24 @@ h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; 
 @media (max-width: 700px){
   body{ padding:16px 8px 60px; }
   header{ text-align:center; margin-bottom:16px; }
+  /* Gränssnittsskalningen är en skrivbordsgrej - mobilen har sin egen
+     kompakta layout och ska inte skalas oavsett sparat värde. */
+  .app{ zoom:1 !important; }
   .overview-donuts{ display:none; }
-  .total-row{ justify-content:center; }
   .totals-split{ justify-content:center; }
   .header-top{ grid-template-columns:auto minmax(0,1fr) auto; }
   .refresh-bar{ width:auto; min-width:110px; }
+
+  /* Hero-kortet blir en enda centrerad kolumn utan sidoramar på mobil.
+     flex-basis (260px/200px) är satt som en BREDD-hint för skrivbordets
+     rad-layout - måste nollställas här, annars tolkas samma värden som en
+     HÖJD-hint när flex-direction byter till column och lämnar tomma ytor. */
+  .hero-card{ flex-direction:column; }
+  .hero-main, .hero-chart, .hero-status{ flex-basis:auto; border-left:none; border-top:1px solid var(--border); padding:16px 18px; }
+  .hero-main{ border-top:none; }
+  .hero-label{ text-align:center; }
+  .hero-chart-change{ text-align:center; }
+  .market-indicator{ align-self:center; }
 
   /* Samma JS-masonry som skrivbordsläget (Layout.relayout(), 2 kolumner) -
      den gamla CSS column-count-lösningen lämnade ofta halva skärmen tom

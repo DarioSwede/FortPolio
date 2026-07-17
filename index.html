@@ -6,7 +6,7 @@
 <title>Portfölj</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=5">
+<link rel="stylesheet" href="css/styles.css?v=6">
 </head>
 <body>
 
@@ -32,20 +32,28 @@
     </div>
     <span class="stamp" id="stamp"></span>
 
-    <div class="totals-block">
-      <div class="total-row">
+    <div class="hero-card">
+      <div class="hero-main">
+        <div class="hero-label">Portfölj</div>
         <div class="total-value" id="totalValue" onclick="ModuleActions.toggleAmounts()" title="Klicka för att visa/dölja belopp">— kr</div>
         <div class="total-change" id="totalChange">—</div>
+        <div class="totals-split">
+          <span class="totals-split-item"><span class="totals-split-label">Aktier</span><span id="totalAktierValue">—</span></span>
+          <span class="totals-split-item"><span class="totals-split-label">Fonder</span><span id="totalFonderValue">—</span></span>
+        </div>
       </div>
-      <div class="totals-split">
-        <span class="totals-split-item"><span class="totals-split-label">Aktier</span><span id="totalAktierValue">—</span></span>
-        <span class="totals-split-item"><span class="totals-split-label">Fonder</span><span id="totalFonderValue">—</span></span>
+
+      <div class="hero-chart">
+        <div class="hero-label">Över tid</div>
+        <div class="hero-chart-body" id="heroChartBody"></div>
+        <div class="hero-chart-change" id="heroChartChange"></div>
+      </div>
+
+      <div class="hero-status">
+        <div class="market-indicator" id="marketIndicator"></div>
+        <div class="overview-donuts" id="overviewDonuts"></div>
       </div>
     </div>
-
-    <div class="market-indicator" id="marketIndicator"></div>
-
-    <div class="overview-donuts" id="overviewDonuts"></div>
   </header>
 
   <div class="columns" id="columns"></div>
@@ -66,6 +74,14 @@
     <div class="settings-row">
       <span>Enkel vy (aktier)</span>
       <div class="switch" id="simpleViewSwitchEl"><div class="knob"></div></div>
+    </div>
+    <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+      <span>Gränssnittsstorlek (skrivbord)</span>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <input type="range" min="100" max="160" step="10" id="uiScaleSlider" value="100" oninput="ModuleActions.setUiScale(this.value)" style="flex:1;">
+        <span id="uiScaleValue" style="font-family:'IBM Plex Mono',monospace; font-size:12px; min-width:38px; text-align:right;">100%</span>
+      </div>
+      <p style="font-size:10.5px; color:var(--text-muted); margin:0;">Skalar hela gränssnittet, inte bara texten. Gäller bara skrivbordet - mobilen har sin egen kompakta layout.</p>
     </div>
     <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:8px;">
       <span>Mål­fördelning aktier/fonder</span>
@@ -154,41 +170,41 @@
 </div>
 
 <!-- Data (icke-känslig referensdata + krypterad blob) -->
-<script src="js/data.js?v=5"></script>
+<script src="js/data.js?v=6"></script>
 
 <!-- Core: laddningsordning spelar roll, senare filer bygger på tidigare -->
-<script src="js/core/storage.js?v=5"></script>
-<script src="js/core/github.js?v=5"></script>
-<script src="js/core/network.js?v=5"></script>
-<script src="js/core/charts.js?v=5"></script>
-<script src="js/core/quote-row.js?v=5"></script>
-<script src="js/core/overview.js?v=5"></script>
-<script src="js/core/alerts.js?v=5"></script>
-<script src="js/core/crypto.js?v=5"></script>
-<script src="js/core/format.js?v=5"></script>
-<script src="js/core/state.js?v=5"></script>
-<script src="js/core/market.js?v=5"></script>
-<script src="js/core/layout.js?v=5"></script>
-<script src="js/core/actions.js?v=5"></script>
-<script src="js/core/lock.js?v=5"></script>
-<script src="js/core/redeye.js?v=5"></script>
-<script src="js/main.js?v=5"></script>
+<script src="js/core/storage.js?v=6"></script>
+<script src="js/core/github.js?v=6"></script>
+<script src="js/core/network.js?v=6"></script>
+<script src="js/core/charts.js?v=6"></script>
+<script src="js/core/quote-row.js?v=6"></script>
+<script src="js/core/history-chart.js?v=6"></script>
+<script src="js/core/overview.js?v=6"></script>
+<script src="js/core/alerts.js?v=6"></script>
+<script src="js/core/crypto.js?v=6"></script>
+<script src="js/core/format.js?v=6"></script>
+<script src="js/core/state.js?v=6"></script>
+<script src="js/core/market.js?v=6"></script>
+<script src="js/core/layout.js?v=6"></script>
+<script src="js/core/actions.js?v=6"></script>
+<script src="js/core/lock.js?v=6"></script>
+<script src="js/core/redeye.js?v=6"></script>
+<script src="js/main.js?v=6"></script>
 
 <!-- Moduler: varje fil registrerar sig själv hos Layout. Ordningen här spelar
      ingen roll för funktionalitet - bara vilken modul som råkar läsas in
      "sist" om man byter State.layout.order manuellt. Lägg till en ny rad
      här när du skapar en ny modul-fil. -->
-<script src="js/modules/aktier.js?v=5"></script>
-<script src="js/modules/fonder.js?v=5"></script>
-<script src="js/modules/bevakning.js?v=5"></script>
-<script src="js/modules/allokering.js?v=5"></script>
-<script src="js/modules/historik.js?v=5"></script>
-<script src="js/modules/ravaror.js?v=5"></script>
-<script src="js/modules/valutor.js?v=5"></script>
-<script src="js/modules/vinnareforlorare.js?v=5"></script>
-<script src="js/modules/utdelning.js?v=5"></script>
-<script src="js/modules/veckanstips.js?v=5"></script>
-<script src="js/modules/borsen.js?v=5"></script>
+<script src="js/modules/aktier.js?v=6"></script>
+<script src="js/modules/fonder.js?v=6"></script>
+<script src="js/modules/bevakning.js?v=6"></script>
+<script src="js/modules/allokering.js?v=6"></script>
+<script src="js/modules/ravaror.js?v=6"></script>
+<script src="js/modules/valutor.js?v=6"></script>
+<script src="js/modules/vinnareforlorare.js?v=6"></script>
+<script src="js/modules/utdelning.js?v=6"></script>
+<script src="js/modules/veckanstips.js?v=6"></script>
+<script src="js/modules/borsen.js?v=6"></script>
 
 <script>
   Lock.init();
