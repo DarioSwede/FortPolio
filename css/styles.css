@@ -281,6 +281,10 @@ h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; 
 
   .card{ padding:11px; }
   .card-head{ margin-bottom:9px; }
-  .grid-list{ grid-template-columns:minmax(0,1fr); gap:7px; margin-top:7px; }
+  /* Tvingade tidigare alltid 1 kolumn - nu auto-fill med ett lägre min-mått
+     så listan själv går till 2 kolumner när modulen fått fylla ut till full
+     bredd (ensam i sin rad), men faller tillbaka till 1 när den delar
+     bredden med en granne. */
+  .grid-list{ grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:7px; margin-top:7px; }
   .text-box{ padding:11px; margin-top:12px; }
 }
