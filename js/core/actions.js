@@ -23,7 +23,6 @@ const ModuleActions = {
   toggleAutoRefreshPause(){
     State.autoRefreshPaused = !State.autoRefreshPaused;
     State.save();
-    App.updatePauseToggle();
     App.scheduleNextAutoRefresh();
   },
 

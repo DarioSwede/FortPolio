@@ -33,7 +33,7 @@ const App = {
 
   // Ingen global "Uppdatera kurser"-knapp längre - varje modul har sin egen
   // (se layout.js/onRefresh). Den här timern kör en tyst bakgrundsuppdatering
-  // av allt, om den inte är pausad via knappen uppe till vänster.
+  // av allt, om den inte är pausad genom att klicka på uppdaterings-baren.
   scheduleNextAutoRefresh(){
     if(this.autoRefreshTimer) clearTimeout(this.autoRefreshTimer);
     if(State.autoRefreshPaused){
@@ -50,10 +50,14 @@ const App = {
 
   // Bar som fylls i grönt i takt med att tiden går mot nästa uppdatering,
   // med nedräkningen skriven direkt i baren istället för en separat siffra.
+  // Baren är själv på/av-knappen för auto-uppdatering (klick i index.html) -
+  // ingen separat växel bredvid den.
   updateCountdownDisplay(){
+    const bar = document.getElementById('refreshBar');
     const fill = document.getElementById('refreshBarFill');
     const time = document.getElementById('refreshBarTime');
-    if(!fill || !time) return;
+    if(!bar || !fill || !time) return;
+    bar.classList.toggle('paused', State.autoRefreshPaused);
     if(State.autoRefreshPaused || this.nextRefreshAt == null){
       fill.style.width = '0%';
       time.textContent = 'Pausad';
@@ -92,18 +96,8 @@ const App = {
   },
 
   wireHeader(){
-    document.getElementById('pauseSwitchEl').addEventListener('click', () => ModuleActions.toggleAutoRefreshPause());
     document.getElementById('hideAmountsSwitchEl').addEventListener('click', () => ModuleActions.toggleAmounts());
     document.getElementById('simpleViewSwitchEl').addEventListener('click', () => ModuleActions.toggleSimpleView());
-    this.updatePauseToggle();
-  },
-
-  updatePauseToggle(){
-    const label = document.getElementById('pauseLabel');
-    const sw = document.getElementById('pauseSwitchEl');
-    if(!label || !sw) return;
-    label.textContent = State.autoRefreshPaused ? 'Pausad' : 'Auto-uppdatering';
-    sw.classList.toggle('on', State.autoRefreshPaused);
   },
 
   refreshAllModules(){

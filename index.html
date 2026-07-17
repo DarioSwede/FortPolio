@@ -21,10 +21,6 @@
 <div class="app" id="app">
   <header>
     <div class="header-top">
-      <div class="hide-toggle">
-        <span class="hide-toggle-label" id="pauseLabel">Auto-uppdatering</span>
-        <div class="switch" id="pauseSwitchEl"><div class="knob"></div></div>
-      </div>
       <button class="btn icon-btn" onclick="ModuleActions.openSettings()" title="Inställningar">⚙</button>
     </div>
 
@@ -43,7 +39,7 @@
 
     <div class="overview-donuts" id="overviewDonuts"></div>
 
-    <div class="refresh-bar" id="refreshBar" title="Tid till nästa automatiska bakgrundsuppdatering">
+    <div class="refresh-bar" id="refreshBar" onclick="ModuleActions.toggleAutoRefreshPause()" title="Klicka för att pausa/starta automatisk uppdatering">
       <div class="refresh-bar-fill" id="refreshBarFill"></div>
       <span class="refresh-bar-time" id="refreshBarTime"></span>
     </div>
