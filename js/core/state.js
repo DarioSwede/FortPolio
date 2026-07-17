@@ -11,11 +11,13 @@ const State = {
   OMXS30_LIST: DATA.OMXS30_LIST,
 
   // Valutor mot SEK (bitcoin i USD, som råvarorna visas i sin egen valuta
-  // utan konvertering). Inte känsligt.
+  // utan konvertering). code är valutakoden kursen anges i - används för att
+  // visa kronans värde mot respektive valuta (1 SEK i USD/GBP/EUR) istället
+  // för tvärtom. Inte känsligt.
   CURRENCIES: [
-    { name:'Dollar', symbol:'USDSEK=X', unit:'SEK' },
-    { name:'Pund', symbol:'GBPSEK=X', unit:'SEK' },
-    { name:'Euro', symbol:'EURSEK=X', unit:'SEK' },
+    { name:'Dollar', symbol:'USDSEK=X', unit:'SEK', code:'USD' },
+    { name:'Pund', symbol:'GBPSEK=X', unit:'SEK', code:'GBP' },
+    { name:'Euro', symbol:'EURSEK=X', unit:'SEK', code:'EUR' },
     { name:'Bitcoin', symbol:'BTC-USD', unit:'USD' }
   ],
 
@@ -25,6 +27,8 @@ const State = {
   activeFilter: { kind:'all', value:null },
   // Sorteringsriktning för procentuell vinst/förlust i Aktier/Fonder-listorna.
   sortDir: { aktier:'desc', fonder:'desc' },
+  // 'day' eller 'year' - vilken period Valutor-kortets trend visar.
+  valutorTrendPeriod: 'day',
   targetAktier: 35,
   omxData: { value:null, changePct:null, status:'idle', symbolUsed:null },
   veckansTips: [],
@@ -83,6 +87,7 @@ const State = {
         this.simpleView = !!st.simpleView;
         if(st.targetAktier !== undefined) this.targetAktier = st.targetAktier;
         if(st.sortDir) this.sortDir = st.sortDir;
+        if(st.valutorTrendPeriod) this.valutorTrendPeriod = st.valutorTrendPeriod;
         if(st.layout){
           this.layout = st.layout;
           if(!this.layout.colSpans) this.layout.colSpans = (st.layout.widths ? {} : { borsen:7, aktier:17, fonder:24 });
@@ -122,7 +127,7 @@ const State = {
     const watchlist = this.watchlist.map(w => ({ symbol:w.symbol, name:w.name, curr:w.curr }));
     const payload = JSON.stringify({
       symbols, commoditySymbols, currencySymbols, ps:this.ps, hideAmounts:this.hideAmounts, simpleView:this.simpleView,
-      targetAktier:this.targetAktier, sortDir:this.sortDir, layout:this.layout, veckansTips:this.veckansTips, hiddenModules:this.hiddenModules,
+      targetAktier:this.targetAktier, sortDir:this.sortDir, valutorTrendPeriod:this.valutorTrendPeriod, layout:this.layout, veckansTips:this.veckansTips, hiddenModules:this.hiddenModules,
       watchlist, priceAlerts:this.priceAlerts, valueHistory:this.valueHistory, fundHistory:this.fundHistory
     });
     await Storage.set('portfolio-state', payload);

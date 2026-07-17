@@ -3,6 +3,7 @@ Layout.register({
   id: 'bevakning',
   title: 'Bevakningslista',
   defaultWidth: 420,
+  addOpen: false,
 
   build(container){
     const list = document.createElement('div'); list.className = 'grid-list';
@@ -16,12 +17,17 @@ Layout.register({
 
     const box = document.createElement('div'); box.className = 'text-box';
     box.innerHTML = `
-      <h3>Lägg till bevakning</h3>
-      <div class="row-inputs">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="margin:0;">Lägg till bevakning</h3>
+        <button class="btn icon-btn" onclick="ModuleActions.toggleAddWatch()" title="${this.addOpen ? 'Dölj' : 'Lägg till bevakning'}">${this.addOpen ? '✕' : '⚙'}</button>
+      </div>
+      ${this.addOpen ? `
+      <div class="row-inputs" style="margin-top:10px;">
         <input class="field" id="watchName" placeholder="Namn, t.ex. NuScale Power">
         <input class="field" id="watchSymbol" placeholder="Symbol, t.ex. SMR">
       </div>
       <div class="actions-row"><button class="btn btn-gold" onclick="ModuleActions.addWatch()">Lägg till</button></div>
+      ` : ''}
     `;
     container.appendChild(box);
   },

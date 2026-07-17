@@ -156,6 +156,11 @@ const ModuleActions = {
 
   refreshAll(){ App.refreshMarketData(); },
 
+  toggleAddWatch(){
+    Layout.modules.bevakning.addOpen = !Layout.modules.bevakning.addOpen;
+    Layout.refreshModule('bevakning');
+  },
+
   addWatch(){
     const nameEl = document.getElementById('watchName');
     const symEl = document.getElementById('watchSymbol');

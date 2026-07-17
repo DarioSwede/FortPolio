@@ -111,6 +111,13 @@ const App = {
         c.prevClose = q.prevClose;
         c.status = 'ok';
       }catch(e){ c.status = 'error'; }
+      // Årstrenden bygger på en extra historik-hämtning (1 stängningskurs
+      // per månad senaste året) - bara för valutor, inte kritiskt om den
+      // misslyckas.
+      try{
+        const hist = await Market.fetchHistory(c.symbol, '1y', '1mo');
+        if(hist && hist.length) c.yearAgoPrice = hist[0];
+      }catch(e){ /* årstrend inte tillgänglig just nu */ }
     }
 
     for(const s of State.STOCKS){
