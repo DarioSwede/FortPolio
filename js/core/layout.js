@@ -135,6 +135,7 @@ const Layout = {
     const unitWidth = (containerWidth - (N - 1) * GAP) / N;
     const colHeights = new Array(N).fill(0);
     const panels = [...columns.querySelectorAll(':scope > .panel')];
+    const widthOf = span => span * unitWidth + (span - 1) * GAP;
 
     // Pass 1: sätt bredden innan något mäts, så innehållet (t.ex. grid-list-
     // kolumner, radbrytningar) faktiskt renderar vid sin slutgiltiga bredd
@@ -142,28 +143,52 @@ const Layout = {
     const spans = panels.map(panel => {
       const id = panel.dataset.id;
       const mod = this.modules[id];
-      const span = Math.max(1, Math.min(N, State.layout.colSpans[id] || this.defaultColSpan(mod)));
+      const custom = State.layout.colSpans[id];
+      const span = Math.max(1, Math.min(N, custom || this.defaultColSpan(mod)));
       panel.style.position = 'absolute';
-      panel.style.width = (span * unitWidth + (span - 1) * GAP) + 'px';
-      return span;
+      panel.style.width = widthOf(span) + 'px';
+      return { span, custom: custom != null };
     });
 
     // Pass 2: mät faktisk höjd (nu med rätt bredd) och packa in i den kolumn
     // (av de span breda) som för tillfället är kortast - en riktig masonry,
     // ingen delad rad-höjd som lämnar tomma luckor.
-    panels.forEach((panel, i) => {
-      const span = spans[i];
+    const placements = panels.map((panel, i) => {
+      const span = spans[i].span;
       let bestStart = 0, bestTop = Infinity;
       for(let start = 0; start <= N - span; start++){
         let maxH = 0;
         for(let c = start; c < start + span; c++) maxH = Math.max(maxH, colHeights[c]);
         if(maxH < bestTop){ bestTop = maxH; bestStart = start; }
       }
-      panel.style.left = (bestStart * (unitWidth + GAP)) + 'px';
-      panel.style.top = bestTop + 'px';
       const h = panel.getBoundingClientRect().height;
-      const newH = bestTop + h + GAP;
-      for(let c = bestStart; c < bestStart + span; c++) colHeights[c] = newH;
+      for(let c = bestStart; c < bestStart + span; c++) colHeights[c] = bestTop + h + GAP;
+      return { panel, start: bestStart, span, top: bestTop, height: h };
+    });
+
+    // Pass 3: en panel utan egen (användarvald) bredd som råkar stå ensam i
+    // sin "rad" - ingen annan panel delar dess kolumner i samma höjdintervall
+    // - får fylla ut till närmaste verkliga granne istället för att lämna
+    // resten av bredden tom. Löser t.ex. att bara Valutor synlig (allt annat
+    // dolt i Inställningar) annars behåller sin smala standardbredd med en
+    // stor tom yta bredvid, trots att inget annat kan stå där.
+    placements.forEach((p, i) => {
+      if(spans[i].custom) return; // respektera en bredd användaren själv dragit
+      let maxReach = N;
+      placements.forEach((other, j) => {
+        if(j === i) return;
+        const overlaps = other.top < p.top + p.height && other.top + other.height > p.top;
+        if(overlaps && other.start >= p.start + p.span && other.start < maxReach) maxReach = other.start;
+      });
+      if(maxReach > p.start + p.span){
+        p.span = maxReach - p.start;
+        p.panel.style.width = widthOf(p.span) + 'px';
+      }
+    });
+
+    placements.forEach(p => {
+      p.panel.style.left = (p.start * (unitWidth + GAP)) + 'px';
+      p.panel.style.top = p.top + 'px';
     });
 
     columns.style.height = Math.max(0, Math.max(0, ...colHeights) - GAP) + 'px';

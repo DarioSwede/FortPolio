@@ -41,21 +41,21 @@ Layout.register({
     const isOpen = this.expanded.has(c.id);
     const period = State.valutorTrendPeriod || 'day';
 
-    // Dollar/Pund/Euro hämtas som "1 X = ? SEK" (unit SEK) - vänd på det så
-    // att kortet visar kronans eget värde ("1 SEK = ? X") istället, som
-    // efterfrågat: en stigande siffra ska betyda att kronan stärkts.
-    // Bitcoin har ingen naturlig SEK-motsvarighet och visas oinverterad.
+    // Visar hur mycket en enhet av valutan är värd i kronor (t.ex. "1 USD =
+    // 10,55 kr") - den riktning folk faktiskt tänker i. Dollar/Pund/Euro
+    // hämtas redan som "1 X = ? SEK" (unit SEK), så ingen omräkning behövs
+    // där. Bitcoin har ingen SEK-notering och visas i sin egen valuta (USD).
     const isFiat = c.unit === 'SEK';
-    const displayCode = isFiat ? c.code : c.unit;
+    const displayCode = c.unit;
     const symbol = Format.currencySymbol(displayCode);
-    const displayPrice = hasPrice ? (isFiat ? 1 / c.price : c.price) : null;
+    const displayPrice = c.price;
 
     let ch = null;
     if(hasPrice){
       if(period === 'year'){
-        if(c.yearAgoPrice) ch = isFiat ? Format.pct(1 / c.price, 1 / c.yearAgoPrice) : Format.pct(c.price, c.yearAgoPrice);
+        if(c.yearAgoPrice) ch = Format.pct(c.price, c.yearAgoPrice);
       } else if(c.prevClose){
-        ch = isFiat ? Format.pct(1 / c.price, 1 / c.prevClose) : Format.pct(c.price, c.prevClose);
+        ch = Format.pct(c.price, c.prevClose);
       }
     }
     const changeLabel = ch
@@ -69,7 +69,7 @@ Layout.register({
         <span class="ticker">${c.name}</span>
         <span class="price">${hasPrice ? symbol + ' ' + displayPrice.toLocaleString('sv-SE',{maximumFractionDigits:decimals}) : '—'}</span>
       </div>
-      ${isFiat ? `<div class="unit-suffix" style="margin-top:-2px;">1 kr i ${displayCode}</div>` : ''}
+      ${isFiat ? `<div class="unit-suffix" style="margin-top:-2px;">1 ${c.code} i ${displayCode}</div>` : ''}
       <span class="change ${ch ? (ch.pos?'pos':'neg') : 'flat'}">${changeLabel}</span>
       ${isOpen ? `
       <div class="meta" onclick="event.stopPropagation()">
