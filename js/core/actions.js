@@ -98,6 +98,35 @@ const ModuleActions = {
   closeRekrypt(){ Lock.closeRekrypt(); },
   doRekrypt(){ Lock.doRekrypt(); },
 
+  openRedeye(){ Redeye.open(); },
+  closeRedeye(){ Redeye.close(); },
+
+  addRedeyeEntry(){
+    const dateInput = document.getElementById('redeyeDateInput');
+    const titleInput = document.getElementById('redeyeTitleInput');
+    const contentInput = document.getElementById('redeyeContentInput');
+    const date = dateInput.value || Redeye.todayStr();
+    const title = titleInput.value.trim();
+    const content = contentInput.value.trim();
+    if(!title && !content) return;
+    State.redeyeNews.push({
+      id: 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      date, title, content,
+      addedAt: new Date().toISOString()
+    });
+    State.save();
+    const [y, m] = date.split('-').map(Number);
+    Redeye.viewYear = y; Redeye.viewMonth = m - 1;
+    Redeye.selectedDate = date;
+    Redeye.render();
+  },
+
+  removeRedeyeEntry(id){
+    State.redeyeNews = State.redeyeNews.filter(e => e.id !== id);
+    State.save();
+    Redeye.render();
+  },
+
   async openSettings(){
     document.getElementById('settingsScreen').classList.remove('hidden');
 

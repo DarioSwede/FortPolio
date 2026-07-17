@@ -18,6 +18,7 @@ const App = {
   async start(){
     await State.load();
     this.wireHeader();
+    Redeye.init();
     this.refreshAllModules();
     State.recordSnapshot(this.currentTotal());
     setInterval(() => Layout.refreshModule('borsen'), 60000);

@@ -21,6 +21,9 @@
 <div class="app" id="app">
   <header>
     <div class="header-top">
+      <button class="btn icon-btn" style="position:relative;" onclick="ModuleActions.openRedeye()" title="Redeye - nyheter">
+        📰<span class="notif-dot" id="redeyeBadge" style="display:none;"></span>
+      </button>
       <button class="btn icon-btn" onclick="ModuleActions.openSettings()" title="Inställningar">⚙</button>
     </div>
 
@@ -113,6 +116,18 @@
   <div class="overlay-box" id="stockDetailBox"></div>
 </div>
 
+<div id="redeyeScreen" class="overlay hidden">
+  <div class="overlay-box wide">
+    <div class="overlay-box-head">
+      <h3 style="margin-bottom:0;">Redeye - nyheter</h3>
+      <button class="btn icon-btn" onclick="ModuleActions.closeRedeye()" title="Stäng">✕</button>
+    </div>
+    <p>Ingen backend kan hämta mejl automatiskt - klistra in text från Redeye här så sparas den på rätt dag i kalendern.</p>
+    <div id="redeyeCalendar"></div>
+    <div id="redeyeEntries" style="margin-top:16px;"></div>
+  </div>
+</div>
+
 <div id="rekryptScreen" class="overlay hidden">
   <div class="overlay-box">
     <h3>Byt lösenord</h3>
@@ -156,6 +171,7 @@
 <script src="js/core/layout.js"></script>
 <script src="js/core/actions.js"></script>
 <script src="js/core/lock.js"></script>
+<script src="js/core/redeye.js"></script>
 <script src="js/main.js"></script>
 
 <!-- Moduler: varje fil registrerar sig själv hos Layout. Ordningen här spelar

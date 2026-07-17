@@ -34,6 +34,11 @@ const State = {
   omxData: { value:null, changePct:null, status:'idle', symbolUsed:null },
   veckansTips: [],
 
+  // Nyheter/analyser klistrade in från Redeye (se redeye.js) - visas som en
+  // kalender. redeyeLastViewed styr den olästa-indikatorn på headerknappen.
+  redeyeNews: [],   // [{id, date:'YYYY-MM-DD', title, content, addedAt}]
+  redeyeLastViewed: null,
+
   // Bevakningslista: aktier man följer utan att äga. Inte känsligt (ingen
   // innehavsstorlek), sparas okrypterat precis som råvaru-symbolerna.
   watchlist: [
@@ -106,6 +111,8 @@ const State = {
         }
         if(st.hiddenModules) this.hiddenModules = st.hiddenModules;
         if(st.veckansTips) this.veckansTips = st.veckansTips;
+        if(st.redeyeNews) this.redeyeNews = st.redeyeNews;
+        if(st.redeyeLastViewed) this.redeyeLastViewed = st.redeyeLastViewed;
         if(st.watchlist) this.watchlist = st.watchlist.map(w => ({ ...w, price:null, prevClose:null }));
         if(st.priceAlerts) this.priceAlerts = st.priceAlerts;
         if(st.valueHistory) this.valueHistory = st.valueHistory;
@@ -129,7 +136,8 @@ const State = {
     const payload = JSON.stringify({
       symbols, commoditySymbols, currencySymbols, ps:this.ps, hideAmounts:this.hideAmounts, simpleView:this.simpleView,
       targetAktier:this.targetAktier, valutorTrendPeriod:this.valutorTrendPeriod, autoRefreshPaused:this.autoRefreshPaused, layout:this.layout, veckansTips:this.veckansTips, hiddenModules:this.hiddenModules,
-      watchlist, priceAlerts:this.priceAlerts, valueHistory:this.valueHistory, fundHistory:this.fundHistory
+      watchlist, priceAlerts:this.priceAlerts, valueHistory:this.valueHistory, fundHistory:this.fundHistory,
+      redeyeNews:this.redeyeNews, redeyeLastViewed:this.redeyeLastViewed
     });
     await Storage.set('portfolio-state', payload);
   },

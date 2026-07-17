@@ -224,12 +224,35 @@ h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; 
 .overlay{ position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:9998; display:flex; align-items:center; justify-content:center; padding:20px; }
 .overlay.hidden{ display:none; }
 .overlay-box{ background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:22px; max-width:520px; width:100%; max-height:calc(100vh - 40px); overflow-y:auto; }
+.overlay-box.wide{ max-width:640px; }
 .overlay-box h3{ font-family:'Space Grotesk',sans-serif; font-size:15px; margin-bottom:10px; }
 .overlay-box-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
 .overlay-box p{ font-size:12px; color:var(--text-muted); margin-bottom:12px; line-height:1.5; }
 .overlay-box .row-inputs{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
 .overlay-box .row-inputs input{ flex:1; min-width:160px; padding:8px 10px; }
 .overlay-box textarea.output{ display:none; margin-top:12px; min-height:110px; width:100%; }
+
+/* Olästa-indikator på headerknappar (t.ex. Redeye-nyheter) */
+.notif-dot{ position:absolute; top:-2px; right:-2px; width:9px; height:9px; border-radius:50%; background:var(--loss); border:2px solid var(--bg); }
+
+/* Redeye-kalender */
+.cal-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.cal-title{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; text-transform:capitalize; }
+.cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.cal-weekdays{ margin-bottom:4px; }
+.cal-weekday{ text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-muted); text-transform:uppercase; }
+.cal-cell{ position:relative; aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:6px; cursor:pointer; background:var(--bg); border:1px solid transparent; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-muted); }
+.cal-cell:hover{ border-color:var(--border); }
+.cal-cell.empty{ cursor:default; visibility:hidden; }
+.cal-cell.today{ border-color:var(--gold); color:var(--text); }
+.cal-cell.selected{ background:var(--surface-hi); border-color:var(--gold); color:var(--text); }
+.cal-cell.has-entries{ color:var(--text); }
+.cal-cell.has-entries .cal-day-num{ font-weight:600; }
+.cal-dot{ position:absolute; bottom:4px; width:5px; height:5px; border-radius:50%; background:var(--gold); }
+
+.redeye-entry{ background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px 12px; margin-bottom:8px; }
+.redeye-entry-title{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; margin-bottom:4px; }
+.redeye-entry-content{ font-size:12px; color:var(--text-muted); line-height:1.5; }
 
 .settings-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-top:1px solid var(--border); }
 .settings-row:first-of-type{ border-top:none; }
