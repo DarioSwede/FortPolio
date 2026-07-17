@@ -134,99 +134,82 @@ const App = {
   // --- Live-hämtning, en kategori i taget. Anropas antingen från en enskild
   // modul (dess egen ↻-knapp, se layout.js) eller i tur och ordning av
   // refreshAllMarketData() (bakgrundstimern). Returnerar { ok, fail } så
-  // uppdateringsknappen kan visa en liten stämpel.
+  // uppdateringsknappen kan visa en liten stämpel. Loopen/räkningen sköts av
+  // Market.fetchEach() - här sätts bara vad som är specifikt för kategorin.
 
   async refreshCommodities(){
-    let ok = 0, fail = 0;
-    for(const c of State.COMMODITIES){
-      if(!c.symbol) continue;
-      try{
-        const meta = await Market.fetchQuote(c.symbol);
-        const q = Market.normalizeQuote(meta);
-        c.price = q.price;
-        c.prevClose = q.prevClose;
-        c.status = 'ok';
-        ok++;
-      }catch(e){ c.status = 'error'; fail++; }
-    }
+    const result = await Market.fetchEach(State.COMMODITIES,
+      async c => {
+        const q = Market.normalizeQuote(await Market.fetchQuote(c.symbol));
+        c.price = q.price; c.prevClose = q.prevClose; c.status = 'ok';
+      },
+      c => { c.status = 'error'; }
+    );
     Layout.refreshModule('ravaror');
-    return { ok, fail };
+    return result;
   },
 
   async refreshCurrencies(){
-    let ok = 0, fail = 0;
-    for(const c of State.CURRENCIES){
-      if(!c.symbol) continue;
-      try{
-        const meta = await Market.fetchQuote(c.symbol);
-        const q = Market.normalizeQuote(meta);
-        c.price = q.price;
-        c.prevClose = q.prevClose;
-        c.status = 'ok';
-        ok++;
-      }catch(e){ c.status = 'error'; fail++; }
-      // Årstrenden bygger på en extra historik-hämtning, inte kritisk om den
-      // misslyckas - räknas inte in i ok/fail.
-      try{
-        const hist = await Market.fetchHistory(c.symbol, '1y', '1mo');
-        if(hist && hist.length) c.yearAgoPrice = hist[0];
-      }catch(e){ /* årstrend inte tillgänglig just nu */ }
-    }
+    const result = await Market.fetchEach(State.CURRENCIES,
+      async c => {
+        const q = Market.normalizeQuote(await Market.fetchQuote(c.symbol));
+        c.price = q.price; c.prevClose = q.prevClose; c.status = 'ok';
+        // Årstrenden bygger på en extra historik-hämtning, inte kritisk om
+        // den misslyckas - påverkar inte ok/fail för själva kursen.
+        try{
+          const hist = await Market.fetchHistory(c.symbol, '1y', '1mo');
+          if(hist && hist.length) c.yearAgoPrice = hist[0];
+        }catch(e){ /* årstrend inte tillgänglig just nu */ }
+      },
+      c => { c.status = 'error'; }
+    );
     Layout.refreshModule('valutor');
-    return { ok, fail };
+    return result;
   },
 
   async refreshStocks(){
-    let ok = 0, fail = 0;
-    for(const s of State.STOCKS){
-      if(!s.symbol) continue;
-      try{
-        const meta = await Market.fetchQuote(s.symbol);
-        const q = Market.normalizeQuote(meta);
-        s.price = q.price;
-        ok++;
-      }catch(e){ fail++; }
+    const result = await Market.fetchEach(State.STOCKS, async s => {
+      // Sparklinen hämtas alltid, även om själva kursen misslyckas - de är
+      // oberoende anrop och en lyckad historik är värd att visa ändå.
+      // quoteErr kastas på nytt sist så fetchEach:s ok/fail speglar kursen.
+      let quoteErr = null;
+      try{ s.price = Market.normalizeQuote(await Market.fetchQuote(s.symbol)).price; }
+      catch(e){ quoteErr = e; }
       try{ s.sparkline = await Market.fetchHistory(s.symbol); }
       catch(e){ /* ingen graf just nu - inte kritiskt */ }
-    }
+      if(quoteErr) throw quoteErr;
+    });
     Layout.refreshModule('aktier');
     Overview.render();
     this.updateHeaderTotals();
-    return { ok, fail };
+    return result;
   },
 
   async refreshWatchlist(){
-    let ok = 0, fail = 0;
-    for(const w of State.watchlist){
-      if(!w.symbol) continue;
+    const result = await Market.fetchEach(State.watchlist, async w => {
+      // Samma resonemang som refreshStocks: sparklinen hämtas oberoende av
+      // om kursen lyckas, och lämnar senaste kända pris orört vid fel.
+      let quoteErr = null;
       try{
-        const meta = await Market.fetchQuote(w.symbol);
-        const q = Market.normalizeQuote(meta);
-        w.price = q.price;
-        w.prevClose = q.prevClose;
-        w.curr = q.currency || w.curr;
-        ok++;
-      }catch(e){ fail++; /* lämna senaste kända pris orört */ }
+        const q = Market.normalizeQuote(await Market.fetchQuote(w.symbol));
+        w.price = q.price; w.prevClose = q.prevClose; w.curr = q.currency || w.curr;
+      }catch(e){ quoteErr = e; }
       try{ w.sparkline = await Market.fetchHistory(w.symbol); }
       catch(e){ /* ingen graf just nu */ }
-    }
+      if(quoteErr) throw quoteErr;
+    });
     Layout.refreshModule('bevakning');
-    return { ok, fail };
+    return result;
   },
 
   async refreshOMXS30(){
-    let ok = 0, fail = 0;
-    for(const s of State.OMXS30_LIST){
-      if(!s.symbol) continue;
-      try{
-        const meta = await Market.fetchQuote(s.symbol);
-        const prev = meta.chartPreviousClose ?? meta.previousClose;
-        if(prev) s.changePct = ((meta.regularMarketPrice - prev) / prev) * 100;
-        ok++;
-      }catch(e){ fail++; /* hoppa över just den här */ }
-    }
+    const result = await Market.fetchEach(State.OMXS30_LIST, async s => {
+      const meta = await Market.fetchQuote(s.symbol);
+      const prev = meta.chartPreviousClose ?? meta.previousClose;
+      if(prev) s.changePct = ((meta.regularMarketPrice - prev) / prev) * 100;
+    });
     Layout.refreshModule('vinnareforlorare');
-    return { ok, fail };
+    return result;
   },
 
   async refreshOMXIndex(){

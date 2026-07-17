@@ -35,10 +35,7 @@ Layout.register({
   },
 
   row(c){
-    const row = document.createElement('div'); row.className = 'row row-clickable'; row.dataset.id = c.id;
-    row.onclick = () => this.toggle(c.id);
     const hasPrice = c.price != null;
-    const isOpen = this.expanded.has(c.id);
     const period = State.valutorTrendPeriod || 'day';
 
     // Visar hur mycket en enhet av valutan är värd i kronor (t.ex. "1 USD =
@@ -61,22 +58,20 @@ Layout.register({
     const changeLabel = ch
       ? (ch.pos ? '▲ ' : '▼ ') + ch.text
       : (c.status === 'error' ? 'Ej tillgänglig' : (period === 'year' ? 'Årshistorik saknas' : '—'));
-
     const decimals = displayPrice != null && displayPrice < 1 ? 4 : 2;
-    row.innerHTML = `
-      <div class="row-category">${displayCode}</div>
-      <div class="row-top">
-        <span class="ticker">${c.name}</span>
-        <span class="price">${hasPrice ? symbol + ' ' + displayPrice.toLocaleString('sv-SE',{maximumFractionDigits:decimals}) : '—'}</span>
-      </div>
-      ${isFiat ? `<div class="unit-suffix" style="margin-top:-2px;">1 ${c.code} i ${displayCode}</div>` : ''}
-      <span class="change ${ch ? (ch.pos?'pos':'neg') : 'flat'}">${changeLabel}</span>
-      ${isOpen ? `
-      <div class="meta" onclick="event.stopPropagation()">
-        <span>Symbol:</span>
-        <input class="field" type="text" value="${c.symbol}" onchange="ModuleActions.setCurrencySymbol('${c.id}', this.value)">
-      </div>` : ''}
-    `;
-    return row;
+
+    return QuoteRow.build({
+      id: c.id,
+      badge: displayCode,
+      name: c.name,
+      priceText: hasPrice ? `${symbol} ${displayPrice.toLocaleString('sv-SE',{maximumFractionDigits:decimals})}` : '—',
+      subLabel: isFiat ? `1 ${c.code} i ${displayCode}` : null,
+      changeText: changeLabel,
+      changeClass: ch ? (ch.pos?'pos':'neg') : 'flat',
+      isOpen: this.expanded.has(c.id),
+      symbolValue: c.symbol,
+      symbolOnChange: `ModuleActions.setCurrencySymbol('${c.id}', this.value)`,
+      onToggle: () => this.toggle(c.id)
+    });
   }
 });

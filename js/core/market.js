@@ -33,6 +33,24 @@ const Market = {
     throw new Error('alla symboler misslyckades');
   },
 
+  // Delad hämtningsloop - App.refresh*() i main.js var fem nästan identiska
+  // varv av "hoppa över om ingen symbol, försök hämta, räkna ok/fail".
+  // Körs sekventiellt (inte Promise.all) med flit: samtidiga anrop skulle
+  // slå igenom mot Yahoo/de fria CORS-proxyerna snabbare och öka risken för
+  // rate-limiting, se kommentaren i App.refreshAllMarketData().
+  // worker(item) gör själva hämtningen och sätter fälten på item - kastar
+  // vid fel. onFail(item) är valfri och får chansen att t.ex. sätta en
+  // status-flagga som modulen visar ("Ej tillgänglig").
+  async fetchEach(items, worker, onFail){
+    let ok = 0, fail = 0;
+    for(const item of items){
+      if(!item.symbol) continue;
+      try{ await worker(item); ok++; }
+      catch(e){ fail++; if(onFail) onFail(item, e); }
+    }
+    return { ok, fail };
+  },
+
   // Yahoo rapporterar London-noterade aktier (t.ex. ENQ.L) i pence (valuta
   // "GBp"/"GBX"), inte pund - annars ser man ett pris som är 100x för högt
   // och en helt absurd förändring i % jämfört med en GAV inmatad i pund.
