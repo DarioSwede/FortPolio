@@ -20,26 +20,37 @@
 
 <div class="app" id="app">
   <header>
-    <div class="eyebrow">
-      <span>Portfölj &middot; Avanza</span>
-      <div class="overview-donuts" id="overviewDonuts"></div>
+    <div class="header-top">
+      <div class="hide-toggle">
+        <span class="hide-toggle-label" id="hideLabel">Visa belopp</span>
+        <div class="switch" id="switchEl"><div class="knob"></div></div>
+      </div>
+      <button class="btn icon-btn" onclick="ModuleActions.openSettings()" title="Inställningar">⚙</button>
+    </div>
+
+    <div class="totals-block">
       <div class="total-row">
         <div class="total-value" id="totalValue">— kr</div>
         <div class="total-change" id="totalChange">—</div>
       </div>
-      <div class="header-right">
-        <div class="actions">
-          <span class="stamp" id="stamp">Ej uppdaterat än</span>
-          <span class="auto-refresh-status" id="autoRefreshStatus"></span>
-        </div>
-        <div class="hide-toggle">
-          <button class="btn" style="padding:6px 10px; font-size:11px;" id="refreshBtn">↻ Uppdatera kurser</button>
-          <span class="hide-toggle-label" id="hideLabel">Visa belopp</span>
-          <div class="switch" id="switchEl"><div class="knob"></div></div>
-          <button class="btn icon-btn" onclick="ModuleActions.openSettings()" title="Inställningar">⚙</button>
-        </div>
+      <div class="totals-split">
+        <span class="totals-split-item"><span class="totals-split-label">Aktier</span><span id="totalAktierValue">—</span></span>
+        <span class="totals-split-item"><span class="totals-split-label">Fonder</span><span id="totalFonderValue">—</span></span>
       </div>
     </div>
+
+    <div class="market-indicator" id="marketIndicator"></div>
+
+    <div class="overview-donuts" id="overviewDonuts"></div>
+
+    <div class="refresh-row">
+      <button class="btn" style="padding:6px 10px; font-size:11px;" id="refreshBtn">↻ Uppdatera kurser</button>
+      <div class="refresh-bar" id="refreshBar" title="Tid till nästa automatiska uppdatering">
+        <div class="refresh-bar-fill" id="refreshBarFill"></div>
+        <span class="refresh-bar-time" id="refreshBarTime"></span>
+      </div>
+    </div>
+    <span class="stamp" id="stamp"></span>
   </header>
 
   <div class="columns" id="columns"></div>
@@ -49,7 +60,10 @@
 
 <div id="settingsScreen" class="overlay hidden">
   <div class="overlay-box">
-    <h3>Inställningar</h3>
+    <div class="overlay-box-head">
+      <h3 style="margin-bottom:0;">Inställningar</h3>
+      <button class="btn icon-btn" onclick="ModuleActions.closeSettings()" title="Stäng">✕</button>
+    </div>
     <div class="settings-row">
       <span>Enkel vy (aktier)</span>
       <div class="switch" id="simpleViewSwitchEl"><div class="knob"></div></div>

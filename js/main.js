@@ -8,7 +8,6 @@ const App = {
   nextRefreshAt: null,
   autoRefreshTimer: null,
   currentIntervalMs: null,
-  RING_RADIUS: 8,
 
   async start(){
     await State.load();
@@ -17,7 +16,8 @@ const App = {
     State.recordSnapshot(this.currentTotal());
     setInterval(() => Layout.refreshModule('borsen'), 60000);
     this.scheduleNextAutoRefresh();
-    setInterval(() => this.updateCountdownDisplay(), 1000);
+    this.updateMarketIndicator();
+    setInterval(() => { this.updateCountdownDisplay(); this.updateMarketIndicator(); }, 1000);
   },
 
   stockholmIsOpen(){
@@ -37,38 +37,42 @@ const App = {
     this.updateCountdownDisplay();
   },
 
-  // Cirkel som fylls i takt med att tiden går mot nästa uppdatering, istället
-  // för att bara läsa en nedräknande siffra - samma statusfärg (grön/röd) som
-  // den gamla punkten hade för börsen öppen/stängd.
+  // Bar som fylls i grönt i takt med att tiden går mot nästa uppdatering,
+  // med nedräkningen skriven direkt i baren istället för en separat siffra.
   updateCountdownDisplay(){
-    const el = document.getElementById('autoRefreshStatus');
-    if(!el || this.nextRefreshAt == null) return;
+    const fill = document.getElementById('refreshBarFill');
+    const time = document.getElementById('refreshBarTime');
+    if(!fill || !time || this.nextRefreshAt == null) return;
     const remaining = Math.max(0, this.nextRefreshAt - Date.now());
     const mins = Math.floor(remaining / 60000);
     const secs = Math.floor((remaining % 60000) / 1000);
-    const timeStr = `${mins}:${String(secs).padStart(2,'0')}`;
-    const open = this.stockholmIsOpen();
+    time.textContent = `${mins}:${String(secs).padStart(2,'0')}`;
     const total = this.currentIntervalMs || 1;
     const progress = Math.min(1, Math.max(0, 1 - remaining / total));
-    const r = this.RING_RADIUS;
-    const circumference = 2 * Math.PI * r;
-    const offset = circumference * (1 - progress);
-    const statusClass = open ? 'open' : 'closed';
-    el.innerHTML = `
-      <svg class="refresh-ring" width="20" height="20" viewBox="0 0 20 20">
-        <circle class="ring-track" cx="10" cy="10" r="${r}"></circle>
-        <circle class="ring-fill ${statusClass}" cx="10" cy="10" r="${r}"
-          stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
-          transform="rotate(-90 10 10)"></circle>
-      </svg>
-      ${open ? 'Börsen öppen' : 'Börsen stängd'} · nästa uppdatering om ${timeStr}
-    `;
+    fill.style.width = (progress * 100) + '%';
+  },
+
+  // Badge för "Svenska börsen öppen/stängd" - egen, väl synlig rad i toppen
+  // istället för att vara ihopskriven med nedräkningstexten.
+  updateMarketIndicator(){
+    const el = document.getElementById('marketIndicator');
+    if(!el) return;
+    const open = this.stockholmIsOpen();
+    el.innerHTML = `<span class="status-dot ${open ? 'open' : 'closed'}"></span>${open ? 'Svenska börsen öppen' : 'Svenska börsen stängd'}`;
+    el.classList.toggle('open', open);
+    el.classList.toggle('closed', !open);
+  },
+
+  // Aktier/fonder var för sig (samma underlag som currentTotal() summerar),
+  // så header kan visa både totalen och hur den fördelar sig.
+  holdingsBreakdown(){
+    const aktier = State.STOCKS.filter(s => s.curr === 'SEK').reduce((sum,s) => sum + s.price*s.antal, 0);
+    const fonder = State.FUNDS.reduce((sum,f) => sum + f.varde, 0);
+    return { aktier, fonder, total: aktier + fonder };
   },
 
   currentTotal(){
-    const stockValueSEK = State.STOCKS.filter(s => s.curr === 'SEK').reduce((sum,s) => sum + s.price*s.antal, 0);
-    const fundValue = State.FUNDS.reduce((sum,f) => sum + f.varde, 0);
-    return stockValueSEK + fundValue;
+    return this.holdingsBreakdown().total;
   },
 
   wireHeader(){
@@ -86,7 +90,7 @@ const App = {
   updateHeaderTotals(){
     const stockCostSEK = State.STOCKS.filter(s => s.curr === 'SEK' && s.gav > 0).reduce((sum,s) => sum + s.gav*s.antal, 0);
     const fundCost = State.FUNDS.reduce((sum,f) => sum + f.kostnad, 0);
-    const total = this.currentTotal();
+    const { aktier, fonder, total } = this.holdingsBreakdown();
     const cost = stockCostSEK + fundCost;
 
     document.getElementById('totalValue').textContent = Format.amount(total) + (State.hideAmounts ? '' : ' *');
@@ -96,6 +100,9 @@ const App = {
     const el = document.getElementById('totalChange');
     el.textContent = `${sign}${pct.toFixed(1).replace('.', ',')}% · ${sign}${Format.amount(Math.abs(diff))} sen köp`;
     el.classList.toggle('neg', pct < 0);
+
+    document.getElementById('totalAktierValue').textContent = Format.amount(aktier);
+    document.getElementById('totalFonderValue').textContent = Format.amount(fonder);
 
     document.getElementById('hideLabel').textContent = State.hideAmounts ? 'Endast kurser' : 'Visa belopp';
     document.getElementById('switchEl').classList.toggle('on', State.hideAmounts);

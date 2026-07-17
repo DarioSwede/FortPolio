@@ -17,22 +17,27 @@ code{ background:var(--surface-hi); padding:1px 5px; border-radius:4px; font-fam
 /* ============================================================
    HEADER
    ============================================================ */
-.eyebrow{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.18em; color:var(--text-muted); text-transform:uppercase; margin-bottom:10px; display:flex; align-items:flex-start; gap:24px; flex-wrap:wrap;}
-.eyebrow > span{ white-space:nowrap; padding-top:2px; }
 header{ margin-bottom:22px; }
+.header-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
+
+.totals-block{ margin-bottom:14px; }
 .total-row{ display:flex; align-items:baseline; flex-wrap:wrap; gap:12px; }
 .total-value{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(32px,6vw,44px); letter-spacing:-.01em; line-height:1;}
 .total-change{ font-family:'IBM Plex Mono',monospace; font-size:14px; font-weight:600; padding:5px 10px; border-radius:6px; background:rgba(47,191,157,.12); color:var(--gain); }
 .total-change.neg{ background:rgba(226,87,76,.12); color:var(--loss);}
-.header-right{ display:flex; flex-direction:column; align-items:flex-end; gap:8px; margin-left:auto; }
-.actions{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; justify-content:flex-end;}
-.stamp{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-muted);}
-.auto-refresh-status{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-muted); display:inline-flex; align-items:center; gap:6px; }
-.refresh-ring{ flex-shrink:0; }
-.refresh-ring .ring-track{ fill:none; stroke:var(--border); stroke-width:2.5; }
-.refresh-ring .ring-fill{ fill:none; stroke-width:2.5; stroke-linecap:round; transition:stroke-dashoffset 1s linear; }
-.refresh-ring .ring-fill.open{ stroke:var(--gain); }
-.refresh-ring .ring-fill.closed{ stroke:var(--loss); }
+.totals-split{ display:flex; gap:18px; margin-top:8px; flex-wrap:wrap; }
+.totals-split-item{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--text); }
+.totals-split-label{ color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; font-size:10px; margin-right:6px; }
+
+.market-indicator{ display:inline-flex; align-items:center; gap:7px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); background:var(--surface-hi); border:1px solid var(--border); padding:6px 12px; border-radius:999px; margin-bottom:14px; }
+.market-indicator.open{ border-color:rgba(47,191,157,.4); }
+.market-indicator.closed{ border-color:rgba(226,87,76,.35); }
+
+.refresh-row{ display:flex; align-items:center; gap:10px; margin-top:14px; flex-wrap:wrap; }
+.refresh-bar{ position:relative; width:160px; max-width:100%; height:24px; background:var(--surface-hi); border:1px solid var(--border); border-radius:999px; overflow:hidden; flex-shrink:0; }
+.refresh-bar-fill{ position:absolute; left:0; top:0; height:100%; width:0%; background:var(--gain); transition:width 1s linear; }
+.refresh-bar-time{ position:relative; z-index:1; display:flex; align-items:center; justify-content:center; height:100%; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; color:var(--text); }
+.stamp{ display:block; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-muted); margin-top:8px;}
 
 .hide-toggle{ display:flex; align-items:center; gap:10px; }
 .hide-toggle-label{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; color:var(--text-muted); text-transform:uppercase;}
@@ -56,7 +61,7 @@ input.field:focus, textarea.field:focus{ outline:none; border-color:var(--gold);
 /* ============================================================
    LAYOUT ENGINE (draggable / resizable panels)
    ============================================================ */
-.overview-donuts{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px 24px; }
+.overview-donuts{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px 24px; margin-bottom:6px; }
 .overview-donuts.hidden{ display:none; }
 .overview-donuts > div{ min-width:120px; max-width:190px; }
 .overview-donuts .chip-group-label{ font-size:9px; margin-bottom:3px; }
@@ -209,8 +214,9 @@ h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; 
 
 .overlay{ position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:9998; display:flex; align-items:center; justify-content:center; padding:20px; }
 .overlay.hidden{ display:none; }
-.overlay-box{ background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:22px; max-width:520px; width:100%; }
+.overlay-box{ background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:22px; max-width:520px; width:100%; max-height:calc(100vh - 40px); overflow-y:auto; }
 .overlay-box h3{ font-family:'Space Grotesk',sans-serif; font-size:15px; margin-bottom:10px; }
+.overlay-box-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
 .overlay-box p{ font-size:12px; color:var(--text-muted); margin-bottom:12px; line-height:1.5; }
 .overlay-box .row-inputs{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
 .overlay-box .row-inputs input{ flex:1; min-width:160px; padding:8px 10px; }
@@ -229,12 +235,10 @@ h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; 
 @media (max-width: 700px){
   body{ padding:16px 8px 60px; }
   header{ text-align:center; margin-bottom:16px; }
-  .eyebrow{ display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .overview-donuts{ display:none; }
-  .header-right{ margin-left:0; align-items:center; width:100%; }
-  .hide-toggle{ justify-content:center; }
   .total-row{ justify-content:center; }
-  .actions{ justify-content:center; }
+  .totals-split{ justify-content:center; }
+  .refresh-row{ justify-content:center; }
 
   .columns{ display:block; column-count:2; column-gap:10px; height:auto !important; }
   /* Desktopens masonry sätter position:absolute + left/top/width inline via JS -
