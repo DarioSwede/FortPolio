@@ -18,7 +18,10 @@ code{ background:var(--surface-hi); padding:1px 5px; border-radius:4px; font-fam
    HEADER
    ============================================================ */
 header{ margin-bottom:22px; }
-.header-top{ display:flex; align-items:center; justify-content:flex-end; gap:12px; margin-bottom:18px; }
+/* Grid istället för flex så mittenkolumnen (tidsbaren) blir sant centrerad
+   oavsett bredden på knapparna i sido-kolumnerna, inte bara jämnt fördelad. */
+.header-top{ display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:12px; margin-bottom:6px; }
+.header-top .refresh-bar{ justify-self:center; margin-top:0; }
 
 .totals-block{ margin-bottom:14px; }
 .total-row{ display:flex; align-items:baseline; flex-wrap:wrap; gap:12px; }
@@ -43,6 +46,7 @@ header{ margin-bottom:22px; }
 .refresh-bar.paused .refresh-bar-fill{ background:var(--border); }
 .refresh-bar-time{ position:relative; z-index:1; display:flex; align-items:center; justify-content:center; height:100%; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; color:var(--text); }
 .stamp{ display:block; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-muted); margin-top:8px;}
+#stamp{ text-align:center; margin-bottom:14px; }
 
 .hide-toggle{ display:flex; align-items:center; gap:10px; }
 .hide-toggle-label{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; color:var(--text-muted); text-transform:uppercase;}
@@ -270,7 +274,8 @@ h2.section .drag-dots{ color:var(--border); font-size:14px; letter-spacing:2px; 
   .overview-donuts{ display:none; }
   .total-row{ justify-content:center; }
   .totals-split{ justify-content:center; }
-  .refresh-bar{ margin-left:auto; margin-right:auto; }
+  .header-top{ grid-template-columns:auto minmax(0,1fr) auto; }
+  .refresh-bar{ width:auto; min-width:110px; }
 
   /* Samma JS-masonry som skrivbordsläget (Layout.relayout(), 2 kolumner) -
      den gamla CSS column-count-lösningen lämnade ofta halva skärmen tom

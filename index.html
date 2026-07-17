@@ -24,8 +24,13 @@
       <button class="btn icon-btn" style="position:relative;" onclick="ModuleActions.openRedeye()" title="Redeye - nyheter">
         📰<span class="notif-dot" id="redeyeBadge" style="display:none;"></span>
       </button>
+      <div class="refresh-bar" id="refreshBar" onclick="ModuleActions.toggleAutoRefreshPause()" title="Klicka för att pausa/starta automatisk uppdatering">
+        <div class="refresh-bar-fill" id="refreshBarFill"></div>
+        <span class="refresh-bar-time" id="refreshBarTime"></span>
+      </div>
       <button class="btn icon-btn" onclick="ModuleActions.openSettings()" title="Inställningar">⚙</button>
     </div>
+    <span class="stamp" id="stamp"></span>
 
     <div class="totals-block">
       <div class="total-row">
@@ -41,12 +46,6 @@
     <div class="market-indicator" id="marketIndicator"></div>
 
     <div class="overview-donuts" id="overviewDonuts"></div>
-
-    <div class="refresh-bar" id="refreshBar" onclick="ModuleActions.toggleAutoRefreshPause()" title="Klicka för att pausa/starta automatisk uppdatering">
-      <div class="refresh-bar-fill" id="refreshBarFill"></div>
-      <span class="refresh-bar-time" id="refreshBarTime"></span>
-    </div>
-    <span class="stamp" id="stamp"></span>
   </header>
 
   <div class="columns" id="columns"></div>
