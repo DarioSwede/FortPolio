@@ -3,7 +3,11 @@
    och innehåller "Uppdatera kurser"-flödet som rör flera moduler samtidigt.
 */
 const App = {
-  OPEN_INTERVAL_MS: 5 * 60 * 1000,
+  // 1 min hade 5-dubblat anropsvolymen (~65-70 sekventiella anrop/cykel mot
+  // Yahoo Finance + gratis CORS-proxy-reserver utan dokumenterade rate
+  // limits) under börsens öppettider - 2 min är en rimligare kompromiss
+  // mellan färskhet och risk för fler misslyckade anrop.
+  OPEN_INTERVAL_MS: 2 * 60 * 1000,
   CLOSED_INTERVAL_MS: 60 * 60 * 1000,
   nextRefreshAt: null,
   autoRefreshTimer: null,
