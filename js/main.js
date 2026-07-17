@@ -7,6 +7,8 @@ const App = {
   CLOSED_INTERVAL_MS: 60 * 60 * 1000,
   nextRefreshAt: null,
   autoRefreshTimer: null,
+  currentIntervalMs: null,
+  RING_RADIUS: 8,
 
   async start(){
     await State.load();
@@ -26,6 +28,7 @@ const App = {
   scheduleNextAutoRefresh(){
     if(this.autoRefreshTimer) clearTimeout(this.autoRefreshTimer);
     const interval = this.stockholmIsOpen() ? this.OPEN_INTERVAL_MS : this.CLOSED_INTERVAL_MS;
+    this.currentIntervalMs = interval;
     this.nextRefreshAt = Date.now() + interval;
     this.autoRefreshTimer = setTimeout(() => {
       const btn = document.getElementById('refreshBtn');
@@ -34,6 +37,9 @@ const App = {
     this.updateCountdownDisplay();
   },
 
+  // Cirkel som fylls i takt med att tiden går mot nästa uppdatering, istället
+  // för att bara läsa en nedräknande siffra - samma statusfärg (grön/röd) som
+  // den gamla punkten hade för börsen öppen/stängd.
   updateCountdownDisplay(){
     const el = document.getElementById('autoRefreshStatus');
     if(!el || this.nextRefreshAt == null) return;
@@ -42,7 +48,21 @@ const App = {
     const secs = Math.floor((remaining % 60000) / 1000);
     const timeStr = `${mins}:${String(secs).padStart(2,'0')}`;
     const open = this.stockholmIsOpen();
-    el.innerHTML = `<span class="status-dot ${open ? 'open' : 'closed'}"></span>${open ? 'Börsen öppen' : 'Börsen stängd'} · nästa uppdatering om ${timeStr}`;
+    const total = this.currentIntervalMs || 1;
+    const progress = Math.min(1, Math.max(0, 1 - remaining / total));
+    const r = this.RING_RADIUS;
+    const circumference = 2 * Math.PI * r;
+    const offset = circumference * (1 - progress);
+    const statusClass = open ? 'open' : 'closed';
+    el.innerHTML = `
+      <svg class="refresh-ring" width="20" height="20" viewBox="0 0 20 20">
+        <circle class="ring-track" cx="10" cy="10" r="${r}"></circle>
+        <circle class="ring-fill ${statusClass}" cx="10" cy="10" r="${r}"
+          stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
+          transform="rotate(-90 10 10)"></circle>
+      </svg>
+      ${open ? 'Börsen öppen' : 'Börsen stängd'} · nästa uppdatering om ${timeStr}
+    `;
   },
 
   currentTotal(){
@@ -100,7 +120,8 @@ const App = {
         c.price = q.price;
         c.prevClose = q.prevClose;
         c.status = 'ok';
-      }catch(e){ c.status = 'error'; }
+        okCount++;
+      }catch(e){ c.status = 'error'; failCount++; }
     }
     for(const c of State.CURRENCIES){
       if(!c.symbol) continue;
@@ -110,10 +131,11 @@ const App = {
         c.price = q.price;
         c.prevClose = q.prevClose;
         c.status = 'ok';
-      }catch(e){ c.status = 'error'; }
+        okCount++;
+      }catch(e){ c.status = 'error'; failCount++; }
       // Årstrenden bygger på en extra historik-hämtning (1 stängningskurs
       // per månad senaste året) - bara för valutor, inte kritiskt om den
-      // misslyckas.
+      // misslyckas, räknas inte separat.
       try{
         const hist = await Market.fetchHistory(c.symbol, '1y', '1mo');
         if(hist && hist.length) c.yearAgoPrice = hist[0];
@@ -139,7 +161,8 @@ const App = {
         w.price = q.price;
         w.prevClose = q.prevClose;
         w.curr = q.currency || w.curr;
-      }catch(e){ /* lämna senaste kända pris orört */ }
+        okCount++;
+      }catch(e){ failCount++; /* lämna senaste kända pris orört */ }
       try{ w.sparkline = await Market.fetchHistory(w.symbol); }
       catch(e){ /* ingen graf just nu */ }
     }
@@ -149,7 +172,8 @@ const App = {
         const meta = await Market.fetchQuote(s.symbol);
         const prev = meta.chartPreviousClose ?? meta.previousClose;
         if(prev) s.changePct = ((meta.regularMarketPrice - prev) / prev) * 100;
-      }catch(e){ /* hoppa över just den här */ }
+        okCount++;
+      }catch(e){ failCount++; /* hoppa över just den här */ }
     }
     try{
       const { meta, symbolUsed } = await Market.fetchQuoteWithFallbacks(State.OMX_CANDIDATES);
@@ -158,12 +182,13 @@ const App = {
       State.omxData.changePct = prev ? ((meta.regularMarketPrice - prev) / prev) * 100 : null;
       State.omxData.symbolUsed = symbolUsed;
       State.omxData.status = 'ok';
-    }catch(e){ State.omxData.status = 'error'; }
+      okCount++;
+    }catch(e){ State.omxData.status = 'error'; failCount++; }
 
     this.refreshAllModules();
     State.recordSnapshot(this.currentTotal());
     document.getElementById('stamp').textContent =
-      `Senast uppdaterat: ${new Date().toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'})} (${okCount} ok, ${failCount} misslyckades)`;
+      `Senast uppdaterat: ${new Date().toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'})} (${okCount} ok, ${failCount} misslyckades av ${okCount+failCount} poster)`;
     btn.disabled = false; btn.textContent = '↻ Uppdatera kurser';
     this.scheduleNextAutoRefresh();
   }
